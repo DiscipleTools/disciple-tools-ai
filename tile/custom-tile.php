@@ -15,6 +15,7 @@ class Disciple_Tools_AI_Tile
         add_filter( 'dt_details_additional_tiles', [ $this, 'dt_details_additional_tiles' ], 10, 2 );
         add_filter( 'dt_custom_fields_settings', [ $this, 'dt_custom_fields' ], 1, 2 );
         add_action( 'dt_details_additional_section', [ $this, 'dt_add_section' ], 30, 2 );
+        add_action( 'dt_post_list_filters_sidebar', [ $this, 'list_filter_box' ], 10, 1 );
     }
 
     /**
@@ -142,6 +143,77 @@ class Disciple_Tools_AI_Tile
             </div>
 
         <?php }
+    }
+
+    public function list_filter_box( $post_type ) {
+        // Check if the post type is the one you want to target
+            ?>
+            <br>
+            <div class="bordered-box">
+                <div class="section-header">
+                    <h4><?php esc_html_e( 'Natural Language Filtering', 'disciple-tools-ai' ); ?></h4>
+                </div>
+                <div class="section-body">
+                    <label for="dt-ai-prompt"><?php esc_html_e( 'Describe the list you want to see:', 'disciple-tools-ai' ); ?></label>
+                    <textarea id="dt-at-prompt" name="custom_filter_output" rows="5" style="width: 100%"></textarea>
+                    <button class="button" id="dt-ai-prompt-button"><?php esc_html_e( 'Create Filter', 'disciple-tools-ai' ); ?></button>
+                </div>
+            </div>
+
+            <script>
+                document.querySelector('#dt-ai-prompt-button').addEventListener('click', function(){
+                    let prompt = document.querySelector('#dt-at-prompt').value;
+                    console.log(prompt);
+                    let nonce = '<?php echo wp_create_nonce( 'wp_rest' ); ?>';
+
+                    fetch(`${wpApiShare.root}disciple-tools-ai/v1/dt-ai-create-filter`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-WP-Nonce': nonce
+                        },
+                        body: JSON.stringify({ prompt: prompt })
+                    }).then(response => response.json())
+                    .then(data => {
+                        console.log(JSON.parse(data));
+                        create_filter(data);
+                    });
+                });
+
+                function create_filter(query) {
+                    get_records_promise = window.makeRequestOnPosts(
+                    'POST',
+                    `${list_settings.post_type}/list`,
+                    JSON.parse(JSON.stringify(query)),
+                    );
+                    return get_records_promise
+                    .then((response) => {
+                        console.log(response);
+                        items = response.posts || [];
+                        window.records_list.posts = items; // adds global access to current list for plugins
+                        window.records_list.total = response.total;
+
+                        // save
+                        if (
+                        Object.prototype.hasOwnProperty.call(response, 'posts') &&
+                        response.posts.length > 0
+                        ) {
+                        let records_list_ids_and_type = [];
+
+                        $.each(items, function (id, post_object) {
+                            records_list_ids_and_type.push({ ID: post_object.ID });
+                        });
+
+                        window.SHAREDFUNCTIONS.save_json_cookie(
+                            `records_list`,
+                            records_list_ids_and_type,
+                            list_settings.post_type,
+                        );
+                        }
+                });
+            }
+            </script>
+            <?php
     }
 }
 Disciple_Tools_AI_Tile::instance();
