@@ -32,6 +32,9 @@ jQuery(document).ready(function($) {
         processUserInput();
     });
     
+    // Make sure submit button has the correct text
+    $('#submit-btn').html('<i class="mdi mdi-send"></i>');
+    
     $('#text-input').on('keypress', function(e) {
         if (e.which === 13) {
             processUserInput();
@@ -67,7 +70,6 @@ jQuery(document).ready(function($) {
             data: JSON.stringify({
                 command: command,
                 parts: jsObject.parts,
-
             }),
             beforeSend: function(xhr) {
                 xhr.setRequestHeader('X-WP-Nonce', jsObject.nonce);
@@ -76,8 +78,37 @@ jQuery(document).ready(function($) {
                 // Remove loading message
                 $('.system-message:last').remove();
                 
+                console.log('Response received:', response);
+                
                 if (response.success) {
-                    displayMessage(response.message);
+                    if (response.ambiguous && response.contacts && response.contacts.length > 0) {
+                        // Display message about multiple contacts
+                        displayMessage(response.message);
+                        
+                        // Create a container for contact options
+                        const selectionContainer = $('<div class="system-message contact-selection-container"></div>');
+                        const optionsDiv = $('<div class="contact-selection-options"></div>');
+                        
+                        // Add each contact as a button
+                        response.contacts.forEach(function(contact) {
+                            const buttonText = contact.name + ' (' + contact.id + ')' + (contact.details ? ' ' + contact.details : '');
+                            const button = $('<button class="contact-select-btn"></button>')
+                                .text(buttonText)
+                                .attr('data-id', contact.id);
+                                
+                            button.on('click', function() {
+                                handleContactSelection($(this).attr('data-id'), response.original_command);
+                            });
+                            
+                            optionsDiv.append(button);
+                        });
+                        
+                        // Add the options to the container and append to chat
+                        selectionContainer.append(optionsDiv);
+                        chatContainer.append(selectionContainer);
+                    } else {
+                        displayMessage(response.message);
+                    }
                 } else {
                     let errorMessage = response.message || "I couldn't understand that command.";
                     displayMessage(errorMessage);
@@ -108,6 +139,50 @@ jQuery(document).ready(function($) {
                 }
                 
                 displayMessage("If the problem persists, try refreshing the page or contact support.");
+            }
+        });
+    }
+    
+    // Handle when a user selects a specific contact
+    function handleContactSelection(contactId, originalCommand) {
+        console.log('Selected contact ID:', contactId);
+        console.log('Original command:', originalCommand);
+        
+        // Remove the selection options
+        $('.contact-selection-container').remove();
+        
+        // Show loading indicator
+        displayMessage("Processing...");
+        
+        // Send the command again with the selected contact
+        $.ajax({
+            url: jsObject.root + 'ai/v1/control/go',
+            type: 'POST',
+            contentType: 'application/json',
+            dataType: 'json',
+            data: JSON.stringify({
+                command: originalCommand,
+                contact_selection: contactId,
+                parts: jsObject.parts
+            }),
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('X-WP-Nonce', jsObject.nonce);
+            },
+            success: function(finalResponse) {
+                // Remove loading message
+                $('.system-message:last').remove();
+                
+                if (finalResponse.success) {
+                    displayMessage(finalResponse.message);
+                } else {
+                    displayMessage("Error: " + (finalResponse.message || "Failed to update contact"));
+                }
+            },
+            error: function(xhr) {
+                // Remove loading message
+                $('.system-message:last').remove();
+                
+                displayMessage("Error: Failed to update contact");
             }
         });
     }

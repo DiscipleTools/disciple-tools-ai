@@ -9,8 +9,8 @@ class DT_AI_Chat extends DT_Magic_Url_Base {
 
     public $page_title = 'AI Chat Control';
     public $page_description = 'AI Chat Control';
-    public $root = 'ai'; // @todo define the root of the url {yoursite}/root/type/key/action
-    public $type = 'control'; // @todo define the type
+    public $root = 'ai';
+    public $type = 'control';
     public $post_type = 'user';
     private $meta_key = '';
     public $show_bulk_send = false;
@@ -89,6 +89,7 @@ class DT_AI_Chat extends DT_Magic_Url_Base {
 
 
     public function enqueue_scripts() {
+        wp_enqueue_style( 'material-font-icons-css', 'https://cdn.materialdesignicons.com/5.4.55/css/materialdesignicons.min.css', [], null, 'all' );
         wp_enqueue_script( 'ai-chat-control', plugin_dir_url( __FILE__ ) . 'ai-chat.js', ['jquery'], filemtime( plugin_dir_path( __FILE__ ) . 'ai-chat.js' ), true );
         wp_enqueue_style( 'ai-chat-control', plugin_dir_url( __FILE__ ) . 'ai-chat.css', [], filemtime( plugin_dir_path( __FILE__ ) . 'ai-chat.css' ) );
         
@@ -117,6 +118,7 @@ class DT_AI_Chat extends DT_Magic_Url_Base {
     public function dt_magic_url_base_allowed_css( $allowed_css ) {
         // @todo add or remove js files with this filter
         $allowed_css[] = 'ai-chat-control';
+        $allowed_css[] = 'material-font-icons-css';
         return $allowed_css;
     }
 
@@ -345,24 +347,90 @@ class DT_AI_Chat extends DT_Magic_Url_Base {
             ];
         }
         
-        // Search for contacts by name regardless of action
-        $search_results = DT_Posts::list_posts( 'contacts', [
-            'name' => $contact_name
-        ], false );
+        // Check if we're processing a selection from multiple contacts
+        $contact_selection = $request->get_param( 'contact_selection' );
+        
+        if ( !empty( $contact_selection ) ) {
+            // The user has selected a specific contact
+            $contact_id = intval( $contact_selection );
+            $contact = DT_Posts::get_post( 'contacts', $contact_id );
+            
+            if ( is_wp_error( $contact ) ) {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to retrieve the selected contact'
+                ];
+            }
+        } else {
+            // Search for contacts by name regardless of action
+            $search_results = DT_Posts::list_posts( 'contacts', [
+                'name' => $contact_name
+            ], false );
 
-        if ( is_wp_error( $search_results ) ) {
-            return new WP_Error( 'search_error', 'Failed to search contacts', [ 'status' => 500 ] );
+            if ( is_wp_error( $search_results ) ) {
+                return new WP_Error( 'search_error', 'Failed to search contacts', [ 'status' => 500 ] );
+            }
+
+            if ( empty( $search_results['posts'] ) ) {
+                return [
+                    'success' => false,
+                    'message' => "Contact '$contact_name' not found"
+                ];
+            }
+
+            // If multiple contacts found with the same name, ask user to choose
+            if ( count( $search_results['posts'] ) > 1 ) {
+                $contacts_list = [];
+                foreach ( $search_results['posts'] as $contact_item ) {
+                    // Prepare contact details to help user identify the right contact
+                    $details = '';
+                    
+                    // Add phone if available
+                    if ( isset( $contact_item['contact_phone'] ) && 
+                        isset( $contact_item['contact_phone']['values'] ) && 
+                        !empty( $contact_item['contact_phone']['values'] ) ) {
+                        $phone_values = array_column( $contact_item['contact_phone']['values'], 'value' );
+                        $details .= implode( ', ', $phone_values );
+                    }
+                    
+                    // Add email if available and no phone was added
+                    if ( empty( $details ) && 
+                        isset( $contact_item['contact_email'] ) && 
+                        isset( $contact_item['contact_email']['values'] ) && 
+                        !empty( $contact_item['contact_email']['values'] ) ) {
+                        $email_values = array_column( $contact_item['contact_email']['values'], 'value' );
+                        $details .= implode( ', ', $email_values );
+                    }
+                    
+                    // Add location if available and no other details
+                    if ( empty( $details ) && isset( $contact_item['location_grid_meta'] ) ) {
+                        $details = $contact_item['location_grid_meta'][0]['label'] ?? '';
+                    }
+                    
+                    // Add a label if we have details
+                    if (!empty($details)) {
+                        $details = "(" . $details . ")";
+                    }
+                    
+                    $contacts_list[] = [
+                        'id' => $contact_item['ID'], // Use uppercase ID for consistency
+                        'name' => $contact_item['name'],
+                        'details' => $details
+                    ];
+                }
+                
+                return [
+                    'success' => true,
+                    'ambiguous' => true,
+                    'message' => "Multiple contacts found with the name '$contact_name'. Please select one:",
+                    'contacts' => $contacts_list,
+                    'original_command' => $command
+                ];
+            }
+
+            // Get the first matching contact
+            $contact = $search_results['posts'][0];
         }
-
-        if ( empty( $search_results['posts'] ) ) {
-            return [
-                'success' => false,
-                'message' => "Contact '$contact_name' not found"
-            ];
-        }
-
-        // Get the first matching contact
-        $contact = $search_results['posts'][0];
         
         // If action is "log", just add a comment
         if ($action === 'none') {
