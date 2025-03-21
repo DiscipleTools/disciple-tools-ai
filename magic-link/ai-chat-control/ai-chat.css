@@ -1,8 +1,19 @@
 body {
     background-color: white !important;
 }
+
+#wrapper {
+    padding: 0 0.5em;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 #magic-link-wrapper {
     padding: 1em;
+}
+
+#content {
+    padding: 0 0.5em;
 }
 
 #chat-container {
@@ -43,6 +54,10 @@ body {
 
 .voice-input-container {
     margin-bottom: 2em;
+}
+
+.chat-input-container {
+    padding: 0.5em 0;
 }
 
 .input-group {
@@ -141,4 +156,95 @@ body {
     padding: 10px;
     background-color: #f5f5f5;
     border-radius: 8px;
+}
+
+/* Message wrapper and button styles */
+.message-wrapper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.8em;
+    width: 100%;
+    gap: 8px;
+}
+
+/* Keep message bubbles aligned correctly within wrapper */
+.message-wrapper .user-message {
+    margin-left: auto;
+    margin-bottom: 0;
+}
+
+.message-wrapper .system-message {
+    margin-bottom: 0;
+}
+
+.contact-link-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    width: 32px;
+    min-width: 32px;
+    padding: 0;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 50%;
+    text-decoration: none;
+    font-size: 1em;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.contact-link-btn:hover {
+    background-color: #45a049;
+    color: white;
+    text-decoration: none;
+    transform: scale(1.1);
+}
+
+.contact-link-btn i {
+    margin: 0;
+}
+
+/* Remove old styles that are no longer needed */
+.message-actions {
+    display: none;
+}
+
+.user-message .message-actions,
+.system-message:has(.message-actions), 
+.user-message:has(.message-actions) {
+    display: none;
+}
+
+/* Responsive adjustments for mobile devices */
+@media screen and (max-width: 600px) {
+    #wrapper {
+        padding: 0.5em;
+    }
+    
+    #chat-container {
+        padding: 0.7em;
+        max-height: 350px;
+    }
+    
+    .user-message, .system-message {
+        max-width: 85%;
+        padding: 0.5em 0.8em;
+        font-size: 0.95em;
+    }
+    
+    .contact-selection-container {
+        padding: 8px;
+    }
+    
+    .contact-select-btn {
+        padding: 8px 10px;
+        font-size: 1em;
+    }
+    
+    .contact-link-btn {
+        height: 28px;
+        width: 28px;
+        min-width: 28px;
+    }
 }

@@ -16,12 +16,35 @@ jQuery(document).ready(function($) {
     let chatContainer = $('<div id="chat-container"></div>');
     $('#content').prepend(chatContainer);
     
-    // Message display function
-    function displayMessage(text, isUser = false) {
-        const messageClass = isUser ? 'user-message' : 'system-message';
-        const message = $(`<div class="${messageClass}"><div class="message-content">${text}</div></div>`);
-        chatContainer.append(message);
+    // Function to scroll chat to bottom
+    function scrollToBottom() {
         chatContainer.scrollTop(chatContainer[0].scrollHeight);
+    }
+    
+    // Message display function
+    function displayMessage(text, isUser = false, contactData = null) {
+        const messageClass = isUser ? 'user-message' : 'system-message';
+        
+        // Create basic message container
+        const messageHtml = `<div class="message-content">${text}</div>`;
+        
+        // Create message wrapper
+        const messageWrapper = $('<div class="message-wrapper"></div>');
+        const message = $(`<div class="${messageClass}">${messageHtml}</div>`);
+        messageWrapper.append(message);
+        
+        // Add contact link button if contact data is provided
+        if (contactData && contactData.id) {
+            const linkButton = $(`
+                <a href="${jsObject.site_url}/contacts/${contactData.id}" target="_blank" class="contact-link-btn">
+                    <i class="mdi mdi-account-arrow-right"></i>
+                </a>
+            `);
+            messageWrapper.append(linkButton);
+        }
+        
+        chatContainer.append(messageWrapper);
+        scrollToBottom();
     }
     
     // Display welcome message
@@ -210,8 +233,9 @@ jQuery(document).ready(function($) {
                         // Add the options to the container and append to chat
                         selectionContainer.append(optionsDiv);
                         chatContainer.append(selectionContainer);
+                        scrollToBottom();
                     } else {
-                        displayMessage(response.message);
+                        displayMessage(response.message, false, response.contact_data);
                     }
                 } else {
                     let errorMessage = response.message || "I couldn't understand that command.";
@@ -254,6 +278,7 @@ jQuery(document).ready(function($) {
         
         // Remove the selection options
         $('.contact-selection-container').remove();
+        scrollToBottom();
         
         // Show loading indicator
         displayMessage("Processing...");
@@ -277,7 +302,7 @@ jQuery(document).ready(function($) {
                 $('.system-message:last').remove();
                 
                 if (finalResponse.success) {
-                    displayMessage(finalResponse.message);
+                    displayMessage(finalResponse.message, false, finalResponse.contact_data);
                 } else {
                     displayMessage("Error: " + (finalResponse.message || "Failed to update contact"));
                 }

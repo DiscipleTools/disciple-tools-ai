@@ -98,6 +98,7 @@ class DT_AI_Chat extends DT_Magic_Url_Base {
             'nonce' => wp_create_nonce( 'wp_rest' ),
             'root' => esc_url_raw( rest_url() ),
             'parts' => $this->parts,
+            'site_url' => trailingslashit( site_url() ),
             'translations' => [
                 'placeholder' => __( 'Type a command like \'I met with John and we talked about his baptism\'...', 'disciple-tools-ai' ),
                 'send' => __( 'Send', 'disciple-tools-ai' ),
@@ -697,11 +698,22 @@ class DT_AI_Chat extends DT_Magic_Url_Base {
                             foreach ($fields_settings[$field_key]['default'] as $option_key => $option_value) {
                                 $option_label = is_array($option_value) ? ($option_value['label'] ?? '') : $option_value;
                                 
-                                // Case-insensitive comparison with label
-                                if (strcasecmp($option_label, $field_value) === 0) {
-                                    $update_fields[$field_key] = $option_key;
-                                    $found = true;
-                                    break;
+                                //$field value might be an array of values, so we need to check if any of the values match
+                                if (is_array($field_value)) {
+                                    foreach ($field_value as $value) {
+                                        if (strcasecmp($option_label, $value) === 0) {
+                                            $update_fields[$field_key] = $option_key;
+                                            $found = true;
+                                            break;
+                                        }
+                                    }
+                                } else {
+                                    // Case-insensitive comparison with label
+                                    if (strcasecmp($option_label, $field_value) === 0) {
+                                        $update_fields[$field_key] = $option_key;
+                                        $found = true;
+                                        break;
+                                    }
                                 }
                             }
                             
@@ -710,11 +722,21 @@ class DT_AI_Chat extends DT_Magic_Url_Base {
                                 foreach ($fields_settings[$field_key]['default'] as $option_key => $option_value) {
                                     $option_label = is_array($option_value) ? ($option_value['label'] ?? '') : $option_value;
                                     
-                                    // Check if field value is contained in the label or vice versa
-                                    if (stripos($option_label, $field_value) !== false || 
-                                        stripos($field_value, $option_label) !== false) {
-                                        $update_fields[$field_key] = $option_key;
-                                        break;
+                                    // $field value might be an array of values, so we need to check if any of the values match
+                                    if (is_array($field_value)) {
+                                        foreach ($field_value as $value) {
+                                            if (stripos($option_label, $value) !== false) {
+                                                $update_fields[$field_key] = $option_key;
+                                                break;
+                                            }
+                                        }
+                                    } else {
+                                        // Check if field value is contained in the label or vice versa
+                                        if (stripos($option_label, $field_value) !== false || 
+                                            stripos($field_value, $option_label) !== false) {
+                                            $update_fields[$field_key] = $option_key;
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -811,7 +833,11 @@ class DT_AI_Chat extends DT_Magic_Url_Base {
         return [
             'success' => true,
             'message' => "Updated " . $contact['title'] . $updated_fields_message . 
-                         ($action === 'met' && !empty($message) ? " and added meeting notes" : "")
+                         ($action === 'met' && !empty($message) ? " and added meeting notes" : ""),
+            'contact_data' => [
+                'id' => $contact['ID'],
+                'name' => $contact['title']
+            ]
         ];
     }
 
