@@ -35,6 +35,110 @@ jQuery(document).ready(function($) {
     // Make sure submit button has the correct text
     $('#submit-btn').html('<i class="mdi mdi-send"></i>');
     
+    // Initialize voice recording functionality
+    let isRecording = false;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    
+    // Handle voice button click
+    $('#voice-btn').on('click', function() {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            // Stop recording
+            mediaRecorder.stop();
+            displayMessage("Processing your voice input...");
+            $(this).html('<i class="mdi mdi-microphone"></i>');
+        } else {
+            // Start recording
+            startRecording();
+            $(this).html('<i class="mdi mdi-stop"></i>');
+        }
+    });
+    
+    // Start recording audio
+    function startRecording() {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(function(stream) {
+                audioChunks = [];
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.addEventListener('dataavailable', function(event) {
+                    audioChunks.push(event.data);
+                });
+                
+                mediaRecorder.addEventListener('stop', function() {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    processAudioTranscription(audioBlob);
+                    
+                    // Stop all audio tracks
+                    stream.getAudioTracks().forEach(track => track.stop());
+                });
+                
+                mediaRecorder.start();
+                displayMessage("Listening... Click the microphone button again to stop recording.");
+            })
+            .catch(function(error) {
+                console.error('Error accessing microphone:', error);
+                displayMessage("Error accessing microphone. Please ensure your microphone is connected and you've granted permission to use it.");
+            });
+    }
+    
+    // Process audio transcription
+    function processAudioTranscription(audioBlob) {
+        transcribeAudio(audioBlob)
+            .then(function(text) {
+                if (text) {
+                    $('#text-input').val(text);
+                    displayMessage("Transcription: " + text);
+                } else {
+                    displayMessage("Couldn't transcribe audio. Please try again or type your message.");
+                }
+                $('#voice-btn').html('<i class="mdi mdi-microphone"></i>');
+            })
+            .catch(function(error) {
+                console.error("Error in transcription:", error);
+                displayMessage("Error transcribing audio: " + error);
+                $('#voice-btn').html('<i class="mdi mdi-microphone"></i>');
+            });
+    }
+    
+    // Transcribe audio using Prediction Guard API through our backend endpoint
+    function transcribeAudio(audioBlob) {
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'recording.webm');
+        //add parts to form data
+        formData.append('parts', JSON.stringify(jsObject.parts));
+        
+        $.ajax({
+            url: jsObject.root + 'ai/v1/control/transcribe',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('X-WP-Nonce', jsObject.nonce);
+            },
+            success: function(response) {
+                // Remove processing message
+                $('.system-message:last').remove();
+                
+                if (response.success && response.text) {
+                    // Set the transcribed text in the input field
+                    $('#text-input').val(response.text);
+                    displayMessage("Transcribed: " + response.text);
+                } else {
+                    displayMessage("Failed to transcribe audio.");
+                }
+            },
+            error: function(xhr, status, error) {
+                // Remove processing message
+                $('.system-message:last').remove();
+                
+                console.error('Transcription error:', xhr.responseText);
+                displayMessage("Error transcribing audio. Please try again.");
+            }
+        });
+    }
+    
     $('#text-input').on('keypress', function(e) {
         if (e.which === 13) {
             processUserInput();

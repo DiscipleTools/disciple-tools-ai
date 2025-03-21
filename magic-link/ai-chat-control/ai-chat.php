@@ -163,6 +163,7 @@ class DT_AI_Chat extends DT_Magic_Url_Base {
                         <div class="input-group">
                             <input type="text" id="text-input" class="input-group-field" placeholder="Type a command like 'I met with John and we talked about his baptism'...">
                             <div class="input-group-button">
+                                <button id="voice-btn" class="button secondary" type="button"><i class="mdi mdi-microphone"></i></button>
                                 <button id="submit-btn" class="button" type="submit"><i class="mdi mdi-send"></i></button>
                             </div>
                         </div>
@@ -216,6 +217,88 @@ class DT_AI_Chat extends DT_Magic_Url_Base {
                     },
             ]
         );
+        register_rest_route(
+            $this->namespace, '/transcribe', [
+                'methods'  => 'POST',
+                'callback' => [ $this, 'process_audio_transcription' ],
+                'permission_callback' => function( WP_REST_Request $request ){
+                    $magic = new DT_Magic_URL( $this->root );
+                    $params = $request->get_params();
+                    $params['parts'] = json_decode( $params['parts'], true );
+                    if ( $params['parts']['root'] !== $this->root || $params['parts']['type'] !== $this->type || empty( $params['parts']['meta_key'] ) ){
+                        return false;
+                    }
+                    $parts = $magic->parse_wp_rest_url_parts( $params );
+                    if ( $parts['meta_key'] !== $params['parts']['meta_key'] ){
+                        return false;
+                    }
+                    return true;
+                },
+            ]
+        );
+    }
+    
+    /**
+     * Process audio transcription
+     */
+    public function process_audio_transcription( WP_REST_Request $request ) {
+        if ( !isset( $_FILES['audio'] ) ) {
+            return new WP_Error( 'missing_audio', 'No audio file received', [ 'status' => 400 ] );
+        }
+
+        $llm_endpoint_root = get_option( 'DT_AI_llm_endpoint' );
+        $llm_api_key = get_option( 'DT_AI_llm_api_key' );
+        $llm_model = get_option( 'DT_AI_llm_model' );
+        $llm_endpoint = $llm_endpoint_root . '/audio/transcriptions';
+        
+        
+        $audio_file = $_FILES['audio'];
+        
+        $curl_file = new CURLFile(
+            $audio_file['tmp_name'],
+            $audio_file['type'],
+            $audio_file['name']
+        );
+        
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $llm_endpoint,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => [
+                'file' => $curl_file,
+                'model' => 'base',
+            ],
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer ' . $llm_api_key,
+            ],
+        ]);
+        
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+        
+        if ($err) {
+            return new WP_Error( 'curl_error', 'cURL Error: ' . $err, [ 'status' => 500 ] );
+        } else {
+            if ($httpcode >= 400) {
+                return new WP_Error( 'api_error', 'API Error: ' . $response, [ 'status' => $httpcode ] );
+            }
+            
+            $transcription_response = json_decode($response, true);
+            if (!isset($transcription_response['text'])) {
+                return new WP_Error( 'invalid_response', 'Invalid response from transcription API', [ 'status' => 500 ] );
+            }
+            
+            return [
+                'success' => true,
+                'text' => $transcription_response['text']
+            ];
+        }
     }
     
     /**
