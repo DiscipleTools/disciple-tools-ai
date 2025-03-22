@@ -361,16 +361,4 @@ jQuery(document).ready(function($) {
         spinner.removeClass('active');
     };
     
-    // Initialize date pickers
-    $('.dt_date_picker').datepicker({
-        constrainInput: false,
-        dateFormat: 'yy-mm-dd',
-        changeMonth: true,
-        changeYear: true,
-        yearRange: "1900:2050",
-    }).each(function() {
-        if (this.value && moment.unix(this.value).isValid()) {
-            this.value = window.SHAREDFUNCTIONS.formatDate(this.value);
-        }
-    });
 }); 
