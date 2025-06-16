@@ -17,7 +17,6 @@ class Disciple_Tools_AI_API {
 
         $original_prompt = $prompt;
         //$pii = self::parse_prompt_for_pii( $post_type, $prompt );
-        
         $pii = [
             'prompt' => [
                 'original' => $prompt,
