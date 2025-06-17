@@ -30,6 +30,20 @@ Show all paused records. ==//== [{"field_key": "overall_status", "field_value": 
 Show all archived records. ==//== [{"field_key": "overall_status", "field_value": "closed", "intent": "EQUALS" }]
 Show all closed records. ==//== [{"field_key": "overall_status", "field_value": "closed", "intent": "EQUALS" }]
 
+active contacts ==//== [{"field_key": "overall_status", "field_value": "active", "intent": ["EQUALS"] }]
+contacts not set ==//== [{"field_key": "overall_status", "field_value": "none", "intent": ["EQUALS"] }]
+new contacts ==//== [{"field_key": "overall_status", "field_value": "new", "intent": ["EQUALS"] }]
+contacts not ready ==//== [{"field_key": "overall_status", "field_value": "unassignable", "intent": ["EQUALS"] }]
+contacts with dispatch needed ==//== [{"field_key": "overall_status", "field_value": "unassigned", "intent": ["EQUALS"] }]
+contacts waiting to be accepted ==//== [{"field_key": "overall_status", "field_value": "assigned", "intent": ["EQUALS"] }]
+paused contacts ==//== [{"field_key": "overall_status", "field_value": "paused", "intent": ["EQUALS" }]
+archived contacts ==//== [{"field_key": "overall_status", "field_value": "closed", "intent": ["EQUALS"] }]
+closed contacts ==//== [{"field_key": "overall_status", "field_value": "closed", "intent": ["EQUALS"] }]
+
+active groups ==//== [{"field_key": "group_status", "field_value": "active", "intent": ["EQUALS"] }]
+groups none set ==//== [{"field_key": "group_status", "field_value": "*", "intent": ["NOT_EQUALS"] }]
+inactive groups ==//== [{"field_key": "group_status", "field_value": "inactive", "intent": ["EQUALS"] }]
+
 Show all seekers. ==//== [{"field_key": "faith_status", "field_value": "seeker", "intent": "EQUALS" }]
 Display all contacts who are believers. ==//== [{"field_key": "faith_status", "field_value": "believer", "intent": "EQUALS" }]
 Show all leaders. ==//== [{"field_key": "faith_status", "field_value": "leader", "intent": "EQUALS" }]

@@ -2,22 +2,9 @@ Show all new contacts assigned to me ==//== [{"field_key": "assigned_to", "field
 Show me all archived contacts ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_CLOSED"] }]
 Show all active contacts not assigned to me ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["NOT_EQUALS", "STATUS_ACTIVE"] }]
 
-contacts ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_ACTIVE"] }]
-active contacts ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_ACTIVE"] }]
-contacts not set ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_NONE"] }]
-new contacts ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_NEW"] }]
-contacts not ready ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_UNASSIGNABLE"] }]
-contacts with dispatch needed ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_UNASSIGNED"] }]
-contacts waiting to be accepted ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_ASSIGNED"] }]
-paused contacts ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_PAUSED"] }]
-archived contacts ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_CLOSED"] }]
-closed contacts ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_CLOSED"] }]
+contacts ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS"] }]
+groups ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS"] }]
 
-groups ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_ACTIVE"] }]
-active groups ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_ACTIVE"] }]
-groups none set ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_NONE"] }]
-inactive groups ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_INACTIVE"] }]
-
-show contacts assigned to 378617eJ63885ae3n ==//== [{"field_key": "assigned_to", "field_value": "378617eJ63885ae3n", "intent": ["EQUALS", "STATUS_ACTIVE"] }]
-show contacts assigned to Jane ==//== [{"field_key": "assigned_to", "field_value": "Jane", "intent": ["EQUALS", "STATUS_ACTIVE"] }]
+show contacts assigned to 378617eJ63885ae3n ==//== [{"field_key": "assigned_to", "field_value": "378617eJ63885ae3n", "intent": ["EQUALS"] }]
+show contacts assigned to Jane ==//== [{"field_key": "assigned_to", "field_value": "Jane", "intent": ["EQUALS"] }]
 

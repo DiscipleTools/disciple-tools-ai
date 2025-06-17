@@ -965,7 +965,7 @@ class Disciple_Tools_AI_API {
                     $connections['locations'][] = $field['field_value'];
                 }
 
-                if ( in_array( $field_settings[ $field['field_key'] ]['type'], [ 'user_select' ] ) ) {
+                if ( in_array( $field_settings[ $field['field_key'] ]['type'], [ 'user_select', 'connection' ] ) ) {
                     $connections['connections'][] = $field['field_value'];
                 }
             }
@@ -1734,6 +1734,16 @@ class Disciple_Tools_AI_API {
             }
         }
 
+        /**
+         * Determine conditional structure to be adopted - AND/OR.
+         */
+
+        $is_or_condition = count( $reshaped_fields ) > 1;
+
+        /**
+         * Determine status, if any.
+         */
+
         if ( !empty( $status ) ) {
             $settings = DT_Posts::get_post_settings( $post_type, false );
             $status_key = $settings['status_field']['status_key'] ?? null;
@@ -1775,11 +1785,24 @@ class Disciple_Tools_AI_API {
             }
         }
 
+        /**
+         * Reshape fields accordingly, based on the conditional flag. -> https://developers.disciple.tools/theme-core/api-posts/list-query#combining-with-and-or-logic
+         */
+
         $final_reshaped_fields = [];
-        foreach ( $reshaped_fields as $field => $values ) {
-            $final_reshaped_fields[] = [
-                $field => $values
-            ];
+        if ( !$is_or_condition ) { // -- AND --
+            foreach ( $reshaped_fields as $field => $values ) {
+                $final_reshaped_fields[] = [
+                    $field => $values
+                ];
+            }
+        } else { // -- OR --
+            $or_conditional_shape = [];
+            foreach ( $reshaped_fields as $field => $values ) {
+                $or_conditional_shape[ $field ] = $values;
+            }
+
+            $final_reshaped_fields[] = $or_conditional_shape;
         }
 
         return $final_reshaped_fields;
@@ -1838,6 +1861,9 @@ class Disciple_Tools_AI_API {
                 case 'DATES_PREVIOUS_YEARS':
                 case 'DATES_PREVIOUS_MONTHS':
                 case 'DATES_PREVIOUS_DAYS':
+                case 'DATES_THIS_YEAR':
+                case 'DATES_THIS_MONTH':
+                case 'DATES_THIS_WEEK':
                     $loop_values = false;
                     // Parse date values and convert to YYYY-MM-DD format
                     $parsed_dates = [];
@@ -1854,7 +1880,7 @@ class Disciple_Tools_AI_API {
                     }
 
                     // Package into final reshaped values.
-                    if ( $intent_value === 'DATES_BETWEEN' ) {
+                    if ( in_array( $intent_value, [ 'DATES_BETWEEN', 'DATES_THIS_YEAR', 'DATES_THIS_MONTH', 'DATES_THIS_WEEK' ] ) ) {
                         if ( count( $parsed_dates ) === 2 ) {
                             $reshaped_values = [
                                 'start' => $parsed_dates[0],
@@ -2097,6 +2123,17 @@ class Disciple_Tools_AI_API {
         }
         if ( $date_string === 'tomorrow' ) {
             return strtotime( 'tomorrow' );
+        }
+
+        // Handle current time periods
+        if ( $date_string === 'this year' ) {
+            return mktime( 0, 0, 0, 1, 1, gmdate( 'Y' ) );
+        }
+        if ( $date_string === 'this month' ) {
+            return mktime( 0, 0, 0, gmdate( 'n' ), 1, gmdate( 'Y' ) );
+        }
+        if ( $date_string === 'this week' ) {
+            return strtotime( 'monday this week' );
         }
 
         // Handle "X days ago" or "last X days"

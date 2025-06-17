@@ -68,3 +68,8 @@ Show contacts baptised tomorrow. ==//== [{"field_key": "baptism_date", "field_va
 Show all contacts baptised between January and March 2025. ==//== [{"field_key": "baptism_date", "field_value": ["January 2025", "March 2025"], "intent": "DATES_BETWEEN" }]
 Show records baptised between Q1 2025. ==//== [{"field_key": "baptism_date", "field_value": "Q1 2025", "intent": "DATES_BETWEEN" }]
 Show contacts baptised in the first quarter of 2025. ==//== [{"field_key": "baptism_date", "field_value": "Q1 2025", "intent": "DATES_BETWEEN" }]
+
+Created this year ==//== [{"field_key": "post_date", "field_value": "this year", "intent": "DATES_THIS_YEAR" }]
+Baptised this month ==//== [{"field_key": "baptism_date", "field_value": "this month", "intent": "DATES_THIS_MONTH" }]
+Created this week ==//== [{"field_key": "post_date", "field_value": "this week", "intent": "DATES_THIS_WEEK" }]
+
