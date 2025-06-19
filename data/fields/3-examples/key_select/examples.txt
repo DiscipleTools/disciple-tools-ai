@@ -36,7 +36,7 @@ new contacts ==//== [{"field_key": "overall_status", "field_value": "new", "inte
 contacts not ready ==//== [{"field_key": "overall_status", "field_value": "unassignable", "intent": ["EQUALS"] }]
 contacts with dispatch needed ==//== [{"field_key": "overall_status", "field_value": "unassigned", "intent": ["EQUALS"] }]
 contacts waiting to be accepted ==//== [{"field_key": "overall_status", "field_value": "assigned", "intent": ["EQUALS"] }]
-paused contacts ==//== [{"field_key": "overall_status", "field_value": "paused", "intent": ["EQUALS" }]
+paused contacts ==//== [{"field_key": "overall_status", "field_value": "paused", "intent": ["EQUALS"] }]
 archived contacts ==//== [{"field_key": "overall_status", "field_value": "closed", "intent": ["EQUALS"] }]
 closed contacts ==//== [{"field_key": "overall_status", "field_value": "closed", "intent": ["EQUALS"] }]
 

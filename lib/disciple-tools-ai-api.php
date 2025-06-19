@@ -259,15 +259,15 @@ class Disciple_Tools_AI_API {
             $fields = $dt_ai_field_specs['fields'];
 
             if ( !empty( $fields['brief'] ) ) {
-                $llm_model_specs_content .= implode( '\n', $fields['brief'] ) .'\n';
+                $llm_model_specs_content .= implode( "\n", $fields['brief'] ) ."\n";
             }
 
             if ( !empty( $fields['instructions'] ) ) {
-                $llm_model_specs_content .= implode( '\n', $fields['instructions'] ) .'\n';
+                $llm_model_specs_content .= implode( "\n", $fields['instructions'] ) ."\n";
             }
 
             if ( !empty( $fields['examples'] ) ) {
-                $llm_model_specs_content .= implode( '\n', $fields['examples'] );
+                $llm_model_specs_content .= implode( "\n", $fields['examples'] );
             }
         }
 
@@ -319,8 +319,8 @@ class Disciple_Tools_AI_API {
                          * Attempt to cleanse inferred.....
                          */
 
-                        $cleansed_inferred_response = explode( '\n', trim( $inferred_response['choices'][0]['message']['content'] ) )[0] ?? '';
-                        $cleansed_inferred_response = str_replace( [ '\n', '\r' ], '', $cleansed_inferred_response );
+                        $cleansed_inferred_response = explode( "\n", trim( $inferred_response['choices'][0]['message']['content'] ) )[0] ?? '';
+                        $cleansed_inferred_response = str_replace( [ "\n", "\r" ], '', $cleansed_inferred_response );
                         $cleansed_inferred_response = str_replace( [ '\"' ], '"', $cleansed_inferred_response );
 
                         // Extract inferred filter into final response and stop retry attempts.
@@ -778,28 +778,28 @@ class Disciple_Tools_AI_API {
             $filters = $dt_ai_filter_specs['filters'];
 
             if ( !empty( $filters['brief'] ) ) {
-                $llm_model_specs_filter .= implode( '\n', $filters['brief'] ) .'\n';
+                $llm_model_specs_filter .= implode( "\n", $filters['brief'] ) ."\n";
             }
 
             if ( !empty( $filters['structure'] ) ) {
-                $llm_model_specs_filter .= implode( '\n', $filters['structure'] ) .'\n';
+                $llm_model_specs_filter .= implode( "\n", $filters['structure'] ) ."\n";
             }
 
             if ( !empty( $filters['post_type_specs'] ) ) {
                 // Reshape associated array into escaped json string.
-                $llm_model_specs_filter .= addslashes( json_encode( $filters['post_type_specs'] ) ) . '\n';
+                $llm_model_specs_filter .= addslashes( json_encode( $filters['post_type_specs'] ) ) . "\n";
             }
 
             if ( !empty( $filters['instructions'] ) ) {
-                $llm_model_specs_filter .= implode( '\n', $filters['instructions'] ) .'\n';
+                $llm_model_specs_filter .= implode( "\n", $filters['instructions'] ) ."\n";
             }
 
             if ( !empty( $filters['considerations'] ) ) {
-                $llm_model_specs_filter .= implode( '\n', $filters['considerations'] ) .'\n';
+                $llm_model_specs_filter .= implode( "\n", $filters['considerations'] ) ."\n";
             }
 
             if ( !empty( $filters['examples'] ) ) {
-                $llm_model_specs_filter .= implode( '\n', $filters['examples'] );
+                $llm_model_specs_filter .= implode( "\n", $filters['examples'] );
             }
         }
 
@@ -847,7 +847,7 @@ class Disciple_Tools_AI_API {
                     if ( isset( $inferred_response['choices'][0]['message']['content'] ) ) {
 
                         // Extract inferred filter into final response and stop retry attempts.
-                        $response = json_decode( str_replace( [ '\n', '\r' ], '', trim( $inferred_response['choices'][0]['message']['content'] ) ), true );
+                        $response = json_decode( str_replace( [ "\n", "\r" ], '', trim( $inferred_response['choices'][0]['message']['content'] ) ), true );
                         if ( !empty( $response ) ) {
                             $attempts = 2;
                         }
@@ -878,19 +878,19 @@ class Disciple_Tools_AI_API {
             $connections = $dt_ai_connection_specs['connections'];
 
             if ( !empty( $connections['brief'] ) ) {
-                $llm_model_specs_filter .= implode( '\n', $connections['brief'] ) .'\n';
+                $llm_model_specs_filter .= implode( "\n", $connections['brief'] ) ."\n";
             }
 
             if ( !empty( $connections['instructions'] ) ) {
-                $llm_model_specs_filter .= implode( '\n', $connections['instructions'] ) .'\n';
+                $llm_model_specs_filter .= implode( "\n", $connections['instructions'] ) ."\n";
             }
 
             if ( !empty( $connections['considerations'] ) ) {
-                $llm_model_specs_filter .= implode( '\n', $connections['considerations'] ) .'\n';
+                $llm_model_specs_filter .= implode( "\n", $connections['considerations'] ) ."\n";
             }
 
             if ( !empty( $connections['examples'] ) ) {
-                $llm_model_specs_filter .= implode( '\n', $connections['examples'] );
+                $llm_model_specs_filter .= implode( "\n", $connections['examples'] );
             }
         }
 
@@ -938,7 +938,7 @@ class Disciple_Tools_AI_API {
                     if ( isset( $inferred_response['choices'][0]['message']['content'] ) ) {
 
                         // Extract inferred connections into final response and stop retry attempts.
-                        $response = json_decode( str_replace( [ '\n', '\r' ], '', trim( $inferred_response['choices'][0]['message']['content'] ) ), true );
+                        $response = json_decode( str_replace( [ "\n", "\r" ], '', trim( $inferred_response['choices'][0]['message']['content'] ) ), true );
                         if ( !empty( $response ) ) {
                             $attempts = 2;
                         }
