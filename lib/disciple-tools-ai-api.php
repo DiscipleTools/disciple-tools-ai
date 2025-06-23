@@ -133,7 +133,7 @@ class Disciple_Tools_AI_API {
         ] );
 
         /**
-         * Proceed with list query, ensuring text searches overwrite any other 
+         * Proceed with list query, ensuring text searches overwrite any other
          * filter fields.
          */
 
@@ -220,7 +220,7 @@ class Disciple_Tools_AI_API {
         ] );
 
         /**
-         * Proceed with list query, ensuring text searches overwrite any other 
+         * Proceed with list query, ensuring text searches overwrite any other
          * filter fields.
          */
 
@@ -1050,7 +1050,7 @@ class Disciple_Tools_AI_API {
                         ];
                     }, $hits ?? [] )
                 ];
-            }            
+            }
         }
 
         return $parsed_users;
