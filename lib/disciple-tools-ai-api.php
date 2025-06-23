@@ -133,15 +133,19 @@ class Disciple_Tools_AI_API {
         ] );
 
         /**
+         * Proceed with list query, ensuring text searches overwrite any other 
+         * filter fields.
+         */
+
+        $query = !empty( $reshaped_fields['text_search'] ) ? [ 'text' => $reshaped_fields['text_search'] ] : [ 'fields' => $reshaped_fields['fields'] ];
+
+        /**
          * Finally, query system for posts, using inferred filters.
          */
 
         $list_posts = [];
         if ( !is_wp_error( $reshaped_fields ) ) {
-            $list = DT_Posts::list_posts( $post_type, [
-                'fields' => $reshaped_fields
-            ] );
-
+            $list = DT_Posts::list_posts( $post_type, $query );
             $list_posts = ( !is_wp_error( $list ) && isset( $list['posts'] ) ) ? $list['posts'] : [];
         }
 
@@ -159,7 +163,8 @@ class Disciple_Tools_AI_API {
                     'posts' => $posts
                 ]
             ],
-            'filter' => $reshaped_fields,
+            'filter' => $reshaped_fields['fields'],
+            'text_search' => $reshaped_fields['text_search'] ?? null,
             'posts' => $list_posts,
             'inferred' => $fields
         ];
@@ -215,15 +220,19 @@ class Disciple_Tools_AI_API {
         ] );
 
         /**
+         * Proceed with list query, ensuring text searches overwrite any other 
+         * filter fields.
+         */
+
+        $query = !empty( $reshaped_fields['text_search'] ) ? [ 'text' => $reshaped_fields['text_search'] ] : [ 'fields' => $reshaped_fields['fields'] ];
+
+         /**
          * Finally, using the filtered fields, query the posts.
          */
 
         $list_posts = [];
         if ( !is_wp_error( $reshaped_fields ) ) {
-            $list = DT_Posts::list_posts( $post_type, [
-                'fields' => $reshaped_fields
-            ] );
-
+            $list = DT_Posts::list_posts( $post_type, $query );
             $list_posts = ( !is_wp_error( $list ) && isset( $list['posts'] ) ) ? $list['posts'] : [];
         }
 
@@ -233,7 +242,8 @@ class Disciple_Tools_AI_API {
                 'original' => $prompt
             ],
             'pii' => $pii,
-            'filter' => $reshaped_fields,
+            'filter' => $reshaped_fields['fields'],
+            'text_search' => $reshaped_fields['text_search'] ?? null,
             'posts' => $list_posts,
             'inferred' => $filtered_fields
         ];
@@ -960,13 +970,27 @@ class Disciple_Tools_AI_API {
 
         $field_settings = DT_Posts::get_post_field_settings( $post_type );
         foreach ( $fields ?? [] as $field ) {
-            if ( isset( $field['field_value'], $field_settings[ $field['field_key'] ] ) ) {
-                if ( in_array( $field_settings[ $field['field_key'] ]['type'], [ 'location', 'location_meta' ] ) ) {
-                    $connections['locations'][] = $field['field_value'];
+            $field_key = $field['field_key'];
+            $field_value = $field['field_value'];
+
+            if ( isset( $field_value, $field_settings[ $field_key ], $field_settings[ $field_key ]['type'] ) ) {
+                $field_type = $field_settings[ $field_key ]['type'];
+
+                if ( in_array( $field_type, [ 'location', 'location_meta' ] ) ) {
+                    $connections['locations'][] = [
+                        'key' => $field_key,
+                        'type' => $field_type,
+                        'value' => $field_value
+                    ];
                 }
 
-                if ( in_array( $field_settings[ $field['field_key'] ]['type'], [ 'user_select', 'connection' ] ) ) {
-                    $connections['connections'][] = $field['field_value'];
+                // In addition to correct field types, ensure certain field values are also ignored.
+                if ( in_array( $field_type, [ 'user_select', 'connection' ] ) && !in_array( strtolower( trim( $field_value ) ), [ 'me' ] ) ) {
+                    $connections['connections'][] = [
+                        'key' => $field_key,
+                        'type' => $field_type,
+                        'value' => $field_value
+                    ];
                 }
             }
         }
@@ -984,13 +1008,13 @@ class Disciple_Tools_AI_API {
         // Iterate over locations, in search of corresponding grid ids.
         foreach ( $locations as $location ) {
             $hits = Disciple_Tools_Mapping_Queries::search_location_grid_by_name( [
-                'search_query' => $pii_mappings[$location] ?? $location,
+                'search_query' => $pii_mappings[$location['value']] ?? $location['value'],
                 'filter' => 'all'
             ] );
 
             $parsed_locations[] = [
-                'prompt' => $pii_mappings[$location] ?? $location,
-                'pii_prompt' => $location,
+                'prompt' => $pii_mappings[$location['value']] ?? $location['value'],
+                'pii_prompt' => $location['value'],
                 'options' => array_map( function( $hit ) {
                     return [
                         'id' => $hit['grid_id'],
@@ -1012,17 +1036,21 @@ class Disciple_Tools_AI_API {
 
         // Iterate over connections, in search of corresponding system users.
         foreach ( $users as $user ) {
-            $hits = Disciple_Tools_Users::get_assignable_users_compact( $pii_mappings[$user] ?? $user, true, $post_type );
-            $parsed_users[] = [
-                'prompt' => $pii_mappings[$user] ?? $user,
-                'pii_prompt' => $user,
-                'options' => array_map( function( $hit ) {
-                    return [
-                        'id' => $hit['ID'],
-                        'label' => $hit['name']
-                    ];
-                }, $hits ?? [] )
-            ];
+
+            // Ensure user field types are correct for user connections.
+            if ( isset( $user['type'] ) && in_array( $user['type'], [ 'user_select' ] ) ) {
+                $hits = Disciple_Tools_Users::get_assignable_users_compact( $pii_mappings[$user['value']] ?? $user['value'], true, $post_type );
+                $parsed_users[] = [
+                    'prompt' => $pii_mappings[$user['value']] ?? $user['value'],
+                    'pii_prompt' => $user['value'],
+                    'options' => array_map( function( $hit ) {
+                        return [
+                            'id' => $hit['ID'],
+                            'label' => $hit['name']
+                        ];
+                    }, $hits ?? [] )
+                ];
+            }            
         }
 
         return $parsed_users;
@@ -1038,29 +1066,32 @@ class Disciple_Tools_AI_API {
         // Iterate over connections, in search of corresponding post-records.
         foreach ( $names as $name ) {
 
-            $records = DT_Posts::list_posts( $post_type, [
-                'fields' => [
-                    [
-                        'name' => $pii_mappings[$name] ?? $name
+            // Ensure name field types are correct for post connections.
+            if ( isset( $name['type'] ) && in_array( $name['type'], [ 'connection' ] ) ) {
+                $records = DT_Posts::list_posts( $post_type, [
+                    'fields' => [
+                        [
+                            'name' => $pii_mappings[$name['value']] ?? $name['value']
+                        ]
+                    ],
+                    'sort' => '-last_modified',
+                    'overall_status' => '-closed',
+                    'fields_to_return' => [
+                        'name'
                     ]
-                ],
-                'sort' => '-last_modified',
-                'overall_status' => '-closed',
-                'fields_to_return' => [
-                    'name'
-                ]
-            ]);
+                ]);
 
-            $parsed_post_names[] = [
-                'prompt' => $pii_mappings[$name] ?? $name,
-                'pii_prompt' => $name,
-                'options' => array_map( function( $record ) {
-                    return [
-                        'id' => $record['ID'],
-                        'label' => $record['name']
-                    ];
-                }, $records['posts'] ?? [] )
-            ];
+                $parsed_post_names[] = [
+                    'prompt' => $pii_mappings[$name['value']] ?? $name['value'],
+                    'pii_prompt' => $name['value'],
+                    'options' => array_map( function( $record ) {
+                        return [
+                            'id' => $record['ID'],
+                            'label' => $record['name']
+                        ];
+                    }, $records['posts'] ?? [] )
+                ];
+            }
         }
 
         return $parsed_post_names;
@@ -1710,7 +1741,9 @@ class Disciple_Tools_AI_API {
     private static function reshape_fields_to_required_list_post_query_structure( $post_type, $fields, $pii_mappings = [], $multiple_options = [] ): array {
         $reshaped_fields = [];
         $status = null;
+        $settings = DT_Posts::get_post_settings( $post_type, false );
 
+        $text_search = null;
         foreach ( $fields ?? [] as $field ) {
             if ( isset( $field['field_key'], $field['field_value'] ) ) {
                 $field_key = $field['field_key'];
@@ -1731,6 +1764,13 @@ class Disciple_Tools_AI_API {
                 $reshaped_fields[ $field_key ] = array_merge( $reshaped_fields[ $field_key ], $extracted_values['values'] );
 
                 $status = $extracted_values['status'] ?? null;
+
+                // Capture text based global searches....
+                if ( isset( $settings['fields'][ $field_key ]['type'] ) && in_array( $settings['fields'][ $field_key ]['type'], [ 'text', 'communication_channel' ] ) ) {
+
+                    // ...will always capture the latest value, overwriting previous entries.
+                    $text_search = $field_value;
+                }
             }
         }
 
@@ -1745,7 +1785,6 @@ class Disciple_Tools_AI_API {
          */
 
         if ( !empty( $status ) ) {
-            $settings = DT_Posts::get_post_settings( $post_type, false );
             $status_key = $settings['status_field']['status_key'] ?? null;
             if ( !empty( $status_key ) ) {
                 $status_value = null;
@@ -1805,7 +1844,10 @@ class Disciple_Tools_AI_API {
             $final_reshaped_fields[] = $or_conditional_shape;
         }
 
-        return $final_reshaped_fields;
+        return [
+            'fields' => $final_reshaped_fields,
+            'text_search' => $text_search
+        ];
     }
 
     private static function extract_reshaped_field_values( $field_key, $field_value, $intent, $pii_mappings = [], $multiple_options = [] ): array {
@@ -1879,6 +1921,34 @@ class Disciple_Tools_AI_API {
                         sort( $parsed_dates ); // This will sort in ascending order (oldest to newest)
                     }
 
+                    // Determine the required end date, based on the intent.
+                    $end_date = gmdate( 'Y-m-d', time() );
+                    switch ( $intent_value ) {
+                        case 'DATES_THIS_YEAR':
+                        case 'DATES_PREVIOUS_YEARS':
+                            // Last day of current year (December 31st)
+                            $end_date = gmdate( 'Y' ) . '-12-31';
+                            break;
+                        case 'DATES_THIS_MONTH':
+                        case 'DATES_PREVIOUS_MONTHS':
+                            // Last day of current month
+                            $current_year = gmdate( 'Y' );
+                            $current_month = gmdate( 'm' );
+                            $last_day_of_month = gmdate( 't', mktime( 0, 0, 0, $current_month, 1, $current_year ) );
+                            $end_date = $current_year . '-' . $current_month . '-' . str_pad( $last_day_of_month, 2, '0', STR_PAD_LEFT );
+                            break;
+                        case 'DATES_THIS_WEEK':
+                            // Last day of current week (Sunday)
+                            $current_timestamp = time();
+                            $last_day_of_week = strtotime( 'next Sunday', $current_timestamp );
+                            // If today is Sunday, we want this Sunday, not next Sunday
+                            if ( gmdate( 'w', $current_timestamp ) === '0' ) {
+                                $last_day_of_week = $current_timestamp;
+                            }
+                            $end_date = gmdate( 'Y-m-d', $last_day_of_week );
+                            break;
+                    }
+
                     // Package into final reshaped values.
                     if ( in_array( $intent_value, [ 'DATES_BETWEEN', 'DATES_THIS_YEAR', 'DATES_THIS_MONTH', 'DATES_THIS_WEEK' ] ) ) {
                         if ( count( $parsed_dates ) === 2 ) {
@@ -1889,7 +1959,7 @@ class Disciple_Tools_AI_API {
                         } else {
                             $reshaped_values = [
                                 'start' => $parsed_dates[0],
-                                'end' => gmdate( 'Y-m-d', time() )
+                                'end' => $end_date
                             ];
                         }
                     }
@@ -1897,7 +1967,7 @@ class Disciple_Tools_AI_API {
                     if ( in_array( $intent_value, [ 'DATES_AFTER', 'DATES_PREVIOUS_YEARS', 'DATES_PREVIOUS_MONTHS', 'DATES_PREVIOUS_DAYS' ] ) ) {
                         $reshaped_values = [
                             'start' => $parsed_dates[0],
-                            'end' => gmdate( 'Y-m-d', time() )
+                            'end' => $end_date
                         ];
                     }
 

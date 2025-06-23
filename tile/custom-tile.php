@@ -336,7 +336,7 @@ class Disciple_Tools_AI_Tile
 
                                 } else if ((response?.status === 'success') && (response?.filter)) {
 
-                                    create_custom_filter(response.filter);
+                                    create_custom_filter(response.filter, response?.text_search);
 
                                     // Stop spinning....
                                     document.getElementById('ai_filter_spinner').style.display = 'none';
@@ -570,7 +570,7 @@ class Disciple_Tools_AI_Tile
 
                         // If successful, load points.
                         if ((data?.status === 'success') && (data?.filter)) {
-                            create_custom_filter(data.filter);
+                            create_custom_filter(data.filter, data?.text_search);
 
                         } else if (data?.status === 'error') {
                             alert( data?.message );
@@ -657,7 +657,7 @@ class Disciple_Tools_AI_Tile
                     return selections;
                 }
 
-                window.create_custom_filter = (filter) => {
+                window.create_custom_filter = (filter, text_search = null) => {
 
                     /**
                      * Assuming valid fields have been generated and required shared
@@ -716,16 +716,16 @@ class Disciple_Tools_AI_Tile
                         }
 
                         /**
-                         * Proceed with Custom AI Filter creation and list refresh.
+                         * Proceed with Custom AI Filter creation and list refresh. Ensure text searches
+                         * overwrite any other filter fields.
                          */
 
+                        let query = text_search ? { text: text_search } : { fields: filter };
                         window.SHAREDFUNCTIONS.reset_split_by_filters();
                         window.SHAREDFUNCTIONS.add_custom_filter(
                             settings.translations['custom_filter'],
                             'custom-filter',
-                            {
-                                fields: filter
-                            },
+                            query,
                             labels
                         );
                     }
