@@ -336,7 +336,7 @@ class Disciple_Tools_AI_Tile
 
                                 } else if ((response?.status === 'success') && (response?.filter)) {
 
-                                    create_custom_filter(response.filter, response?.text_search);
+                                    create_custom_filter(response.filter, response?.inferred, response?.text_search);
 
                                     // Stop spinning....
                                     document.getElementById('ai_filter_spinner').style.display = 'none';
@@ -570,7 +570,7 @@ class Disciple_Tools_AI_Tile
 
                         // If successful, load points.
                         if ((data?.status === 'success') && (data?.filter)) {
-                            create_custom_filter(data.filter, data?.text_search);
+                            create_custom_filter(data.filter, data?.inferred, data?.text_search);
 
                         } else if (data?.status === 'error') {
                             alert( data?.message );
@@ -657,7 +657,7 @@ class Disciple_Tools_AI_Tile
                     return selections;
                 }
 
-                window.create_custom_filter = (filter, text_search = null) => {
+                window.create_custom_filter = (filter, inferred_fields, text_search = null) => {
 
                     /**
                      * Assuming valid fields have been generated and required shared
@@ -665,7 +665,7 @@ class Disciple_Tools_AI_Tile
                      * list refresh.
                      */
 
-                    if (filter && window.SHAREDFUNCTIONS?.add_custom_filter && window.SHAREDFUNCTIONS?.reset_split_by_filters) {
+                    if (inferred_fields && window.SHAREDFUNCTIONS?.add_custom_filter && window.SHAREDFUNCTIONS?.reset_split_by_filters) {
 
                         /**
                          * First, attempt to identify labels to be used based on returned
@@ -673,20 +673,18 @@ class Disciple_Tools_AI_Tile
                          */
 
                         let labels = [];
-                        if (Array.isArray(filter) && window.SHAREDFUNCTIONS?.create_name_value_label) {
-                            filter.forEach((field) => {
-                                for (const [key, filters] of Object.entries(field)) {
+                        if (Array.isArray(inferred_fields) && window.SHAREDFUNCTIONS?.create_name_value_label) {
+                            inferred_fields.forEach((field) => {
+                                if (field?.field_key && field?.field_value) {
+                                    const {field_key, field_value} = field;
+                                    let array_field_values = !Array.isArray(field_value) ? [field_value] : field_value;
 
-                                    if (key && Array.isArray(filters)) {
-                                        filters.forEach((value) => {
-
-                                            const {newLabel} = window.SHAREDFUNCTIONS?.create_name_value_label(key, value, isNaN(value) ? value : '', window?.list_settings);
-                                            if (newLabel) {
-                                                labels.push(newLabel);
-                                            }
-
-                                        });
-                                    }
+                                    array_field_values.forEach((value) => {
+                                        const {newLabel} = window.SHAREDFUNCTIONS?.create_name_value_label(field_key, value, isNaN(value) ? value : '', window?.list_settings);
+                                        if (newLabel) {
+                                            labels.push(newLabel);
+                                        }
+                                    });
                                 }
                             });
                         }

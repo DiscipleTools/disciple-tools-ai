@@ -1926,16 +1926,31 @@ class Disciple_Tools_AI_API {
                     switch ( $intent_value ) {
                         case 'DATES_THIS_YEAR':
                         case 'DATES_PREVIOUS_YEARS':
-                            // Last day of current year (December 31st)
-                            $end_date = gmdate( 'Y' ) . '-12-31';
+                            // For year-based intents, use the year from the start date to calculate end of that year
+                            if ( !empty( $parsed_dates[0] ) ) {
+                                $start_year = gmdate( 'Y', strtotime( $parsed_dates[0] ) );
+                                $end_date = $start_year . '-12-31';
+                            } else {
+                                // Fallback to current year if no start date
+                                $end_date = gmdate( 'Y' ) . '-12-31';
+                            }
                             break;
                         case 'DATES_THIS_MONTH':
                         case 'DATES_PREVIOUS_MONTHS':
-                            // Last day of current month
-                            $current_year = gmdate( 'Y' );
-                            $current_month = gmdate( 'm' );
-                            $last_day_of_month = gmdate( 't', mktime( 0, 0, 0, $current_month, 1, $current_year ) );
-                            $end_date = $current_year . '-' . $current_month . '-' . str_pad( $last_day_of_month, 2, '0', STR_PAD_LEFT );
+                            // For month-based intents, use the year and month from the start date to calculate end of that month
+                            if ( !empty( $parsed_dates[0] ) ) {
+                                $start_timestamp = strtotime( $parsed_dates[0] );
+                                $start_year = gmdate( 'Y', $start_timestamp );
+                                $start_month = gmdate( 'm', $start_timestamp );
+                                $last_day_of_month = gmdate( 't', mktime( 0, 0, 0, $start_month, 1, $start_year ) );
+                                $end_date = $start_year . '-' . $start_month . '-' . str_pad( $last_day_of_month, 2, '0', STR_PAD_LEFT );
+                            } else {
+                                // Fallback to current month if no start date
+                                $current_year = gmdate( 'Y' );
+                                $current_month = gmdate( 'm' );
+                                $last_day_of_month = gmdate( 't', mktime( 0, 0, 0, $current_month, 1, $current_year ) );
+                                $end_date = $current_year . '-' . $current_month . '-' . str_pad( $last_day_of_month, 2, '0', STR_PAD_LEFT );
+                            }
                             break;
                         case 'DATES_THIS_WEEK':
                             // Last day of current week (Sunday)
@@ -1957,16 +1972,44 @@ class Disciple_Tools_AI_API {
                                 'end' => $parsed_dates[1]
                             ];
                         } else {
+                            // For year-based intents, adjust start date to January 1st of that year
+                            $start_date = $parsed_dates[0];
+                            if ( in_array( $intent_value, [ 'DATES_THIS_YEAR' ] ) && !empty( $parsed_dates[0] ) ) {
+                                $start_year = gmdate( 'Y', strtotime( $parsed_dates[0] ) );
+                                $start_date = $start_year . '-01-01';
+                            }
+                            // For month-based intents, adjust start date to 1st of that month
+                            elseif ( in_array( $intent_value, [ 'DATES_THIS_MONTH' ] ) && !empty( $parsed_dates[0] ) ) {
+                                $start_timestamp = strtotime( $parsed_dates[0] );
+                                $start_year = gmdate( 'Y', $start_timestamp );
+                                $start_month = gmdate( 'm', $start_timestamp );
+                                $start_date = $start_year . '-' . $start_month . '-01';
+                            }
+                            
                             $reshaped_values = [
-                                'start' => $parsed_dates[0],
+                                'start' => $start_date,
                                 'end' => $end_date
                             ];
                         }
                     }
 
                     if ( in_array( $intent_value, [ 'DATES_AFTER', 'DATES_PREVIOUS_YEARS', 'DATES_PREVIOUS_MONTHS', 'DATES_PREVIOUS_DAYS' ] ) ) {
+                        // For year-based intents, adjust start date to January 1st of that year
+                        $start_date = $parsed_dates[0];
+                        if ( in_array( $intent_value, [ 'DATES_PREVIOUS_YEARS' ] ) && !empty( $parsed_dates[0] ) ) {
+                            $start_year = gmdate( 'Y', strtotime( $parsed_dates[0] ) );
+                            $start_date = $start_year . '-01-01';
+                        }
+                        // For month-based intents, adjust start date to 1st of that month
+                        elseif ( in_array( $intent_value, [ 'DATES_PREVIOUS_MONTHS' ] ) && !empty( $parsed_dates[0] ) ) {
+                            $start_timestamp = strtotime( $parsed_dates[0] );
+                            $start_year = gmdate( 'Y', $start_timestamp );
+                            $start_month = gmdate( 'm', $start_timestamp );
+                            $start_date = $start_year . '-' . $start_month . '-01';
+                        }
+                        
                         $reshaped_values = [
-                            'start' => $parsed_dates[0],
+                            'start' => $start_date,
                             'end' => $end_date
                         ];
                     }
