@@ -1985,7 +1985,6 @@ class Disciple_Tools_AI_API {
                                 $start_month = gmdate( 'm', $start_timestamp );
                                 $start_date = $start_year . '-' . $start_month . '-01';
                             }
-                            
                             $reshaped_values = [
                                 'start' => $start_date,
                                 'end' => $end_date
@@ -2007,7 +2006,6 @@ class Disciple_Tools_AI_API {
                             $start_month = gmdate( 'm', $start_timestamp );
                             $start_date = $start_year . '-' . $start_month . '-01';
                         }
-                        
                         $reshaped_values = [
                             'start' => $start_date,
                             'end' => $end_date
