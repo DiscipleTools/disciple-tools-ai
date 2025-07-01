@@ -707,8 +707,8 @@ class Disciple_Tools_AI_Tile
                             let status = {};
                             status[settings.settings.status_field.status_key] = [ `${show_archived_records ? '' : '-'}${settings.settings.status_field.archived_key}` ];
 
-                            // Finally append to filter fields.
-                            if ( Array.isArray( filter ) ) {
+                            // Finally append to filter fields, only if it's in a false state.
+                            if ( !show_archived_records && Array.isArray( filter ) ) {
                                 filter.push( status );
                             }
                         }
