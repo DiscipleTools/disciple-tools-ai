@@ -100,7 +100,7 @@ class Disciple_Tools_AI {
 
 //        require_once( 'site-link/custom-site-to-site-links.php' ); // add site to site link class and capabilities
 
-        if ( strpos( dt_get_url_path(), 'metrics' ) !== false || ( $is_rest && strpos( dt_get_url_path(), 'disciple-tools-ai-metrics' ) !== false ) ){
+        if ( strpos( dt_get_url_path(), 'metrics' ) !== false || $is_rest ){
             require_once( 'charts/charts-loader.php' );  // add custom charts to the metrics area
         }
 

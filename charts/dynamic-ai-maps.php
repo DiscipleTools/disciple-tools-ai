@@ -8,11 +8,11 @@ if ( !defined( 'ABSPATH' ) ) { exit; } // Exit if accessed directly.
 
 class Disciple_Tools_AI_Dynamic_Maps extends DT_Metrics_Chart_Base
 {
-    public $base_slug = 'disciple-tools-ai-metrics'; // lowercase
-    public $base_title = 'Disciple Tools AI Metrics';
+    public $base_slug = 'records'; // lowercase
+    public $base_title = 'Records';
 
-    public $title = 'Dynamic AI Maps';
-    public $slug = 'dynamic_ai_maps'; // lowercase
+    public $title = 'AI Map';
+    public $slug = 'dynamic_ai_map'; // lowercase
     public $js_object_name = 'wp_js_object'; // This object will be loaded into the metrics.js file by the wp_localize_script.
     public $js_file_name = 'dynamic-ai-maps.js'; // should be full file name plus extension
     public $permissions = [ 'dt_all_access_contacts', 'view_project_metrics' ];
@@ -68,7 +68,7 @@ class Disciple_Tools_AI_Dynamic_Maps extends DT_Metrics_Chart_Base
                     'nonce' => wp_create_nonce( 'wp_rest' )
                 ],
                 'translations' => [
-                    'placeholder' => __( 'Describe the map you wish to view...', 'disciple-tools-ai' ),
+                    'placeholder' => __( 'Query the map: "Active contacts", "Baptized Contacts", ', 'disciple-tools-ai' ),
                     'default_error_msg' => __( 'Process terminated, due to errors!', 'disciple-tools-ai' ),
                     'details_title' => __( 'Maps', 'disciple-tools-ai' ),
                     'multiple_options' => [
