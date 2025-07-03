@@ -167,7 +167,6 @@ class Disciple_Tools_AI_Data {
 
         return $field_specs;
     }
-
 }
 
 Disciple_Tools_AI_Data::instance();
