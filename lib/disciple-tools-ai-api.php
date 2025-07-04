@@ -1536,16 +1536,18 @@ class Disciple_Tools_AI_API {
                             $start_date = $start_year . '-01-01';
                         }
                         // For month-based intents, adjust start date to 1st of that month
-                        elseif ( in_array( $intent_value, [ 'DATES_PREVIOUS_MONTHS' ] ) && !empty( $parsed_dates[0] ) ) {
+                        elseif ( in_array( $intent_value, [ 'DATES_PREVIOUS_MONTHS', 'DATES_AFTER' ] ) && !empty( $parsed_dates[0] ) ) {
                             $start_timestamp = strtotime( $parsed_dates[0] );
                             $start_year = gmdate( 'Y', $start_timestamp );
                             $start_month = gmdate( 'm', $start_timestamp );
                             $start_date = $start_year . '-' . $start_month . '-01';
                         }
                         $reshaped_values = [
-                            'start' => $start_date,
-                            'end' => $end_date
+                            'start' => $start_date
                         ];
+                        if ( !in_array( $intent_value, [ 'DATES_AFTER' ] ) ) {
+                            $reshaped_values['end'] = $end_date;
+                        }
                     }
 
                     if ( in_array( $intent_value, [ 'DATES_BEFORE' ] ) ) {
