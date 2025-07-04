@@ -40,8 +40,7 @@ class Disciple_Tools_AI_Data {
      * Disciple_Tools_AI_Data constructor.
      */
     public function __construct() {
-        add_filter( 'dt_ai_filter_specs', [ $this, 'dt_ai_filter_specs' ], 10, 2 );
-        add_filter( 'dt_ai_connection_specs', [ $this, 'dt_ai_connection_specs' ], 10, 1 );
+        add_filter( 'dt_ai_field_specs', [ $this, 'dt_ai_field_specs' ], 10, 2 );
     }
 
     private function get_data( $path, $escape = true ): array {
@@ -118,95 +117,55 @@ class Disciple_Tools_AI_Data {
         return $specs;
     }
 
-    public function dt_ai_filter_specs( $filter_specs, $post_type ): array {
+    public function dt_ai_field_specs( $field_specs, $post_type ): array {
+
+        /**
+         * Fetch list of fields associated with given post type and list
+         * keys.
+         */
+
+        $brief = [ 'The following field_keys are allowed:' ];
+        foreach ( DT_Posts::get_post_settings( $post_type )['fields'] ?? [] as $key => $field ) {
+            if ( in_array( $field['type'], [ 'boolean', 'communication_channel', 'connection', 'date', 'key_select', 'location', 'location_meta', 'multi_select', 'tags', 'text', 'user_select' ] ) ) {
+                if ( !isset( $field['private'] ) || !$field['private'] ) {
+                    $brief[] = $key;
+                }
+            }
+        }
 
         /**
          * Load the various parts which will eventually be used
-         * to construct the filter generation model specification.
+         * to construct the field generation model specification.
          */
 
-        $filters_dir = __DIR__ . '/filters/';
+        $fields_dir = __DIR__ . '/fields/';
 
-        $brief = $this->get_data( $filters_dir . '0-brief/brief.txt' );
-        $structure = $this->get_data( $filters_dir . '1-structure/structure.txt' );
-        $instructions = $this->get_data( $filters_dir . '2-instructions/instructions.txt' );
-        $considerations = $this->get_data( $filters_dir . '4-considerations/considerations.txt' );
+        $instructions = $this->get_data( $fields_dir . '1-instructions/instructions.txt' );
 
         /**
-         * Create record post type specification details for given post type.
-         */
-
-        $post_type_specs = $this->generate_record_post_type_specs( $post_type );
-
-        /**
-         * The extraction of examples will require additional logic, in
-         * order to work into the desired shape.
+         * The extraction of examples will require additional logic, to work into the desired shape.
          */
 
         $examples = [];
         $examples[] = 'Examples';
         foreach ( DT_Posts::get_field_types() as $field_type_key => $field_type ) {
-            $path = $filters_dir . '3-examples/'. $field_type_key .'/examples.txt';
+            $path = $fields_dir . '3-examples/'. $field_type_key .'/examples.txt';
             if ( file_exists( $path ) ) {
                 $examples = array_merge( $examples, $this->reshape_examples( $this->get_data( $path ), false ) );
             }
         }
 
         /**
-         * Finally, build and return required specification shape.
+         * Finally, build and return the required specification shape.
          */
 
-        $filter_specs['filters'] = [
+        $field_specs['fields'] = [
             'brief' => $brief,
-            'structure' => $structure,
-            'post_type_specs' => $post_type_specs,
             'instructions' => $instructions,
-            'considerations' => $considerations,
             'examples' => $examples
         ];
 
-        return $filter_specs;
-    }
-
-    public function dt_ai_connection_specs( $connection_specs ): array {
-
-        /**
-         * Load the various parts which will eventually be used
-         * to construct the connection generation model specification.
-         */
-
-        $connections_dir = __DIR__ . '/connections/';
-
-        $brief = $this->get_data( $connections_dir . '0-brief/brief.txt' );
-        $instructions = $this->get_data( $connections_dir . '1-instructions/instructions.txt' );
-        $considerations = $this->get_data( $connections_dir . '3-considerations/considerations.txt' );
-
-        /**
-         * The extraction of examples will require additional logic, in
-         * order to work into the desired shape.
-         */
-
-        $examples = [];
-        $examples[] = 'Examples';
-        foreach ( [ 'connections', 'locations', 'communication_channels' ] as $connection_type ) {
-            $path = $connections_dir . '2-examples/'. $connection_type .'/examples.txt';
-            if ( file_exists( $path ) ) {
-                $examples = array_merge( $examples, $this->reshape_examples( $this->get_data( $path ), false ) );
-            }
-        }
-
-        /**
-         * Finally, build and return required specification shape.
-         */
-
-        $connection_specs['connections'] = [
-            'brief' => $brief,
-            'instructions' => $instructions,
-            'considerations' => $considerations,
-            'examples' => $examples
-        ];
-
-        return $connection_specs;
+        return $field_specs;
     }
 }
 

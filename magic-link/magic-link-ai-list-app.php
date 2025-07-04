@@ -447,8 +447,8 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
         $prompt = $params['filter']['prompt'];
         $post_type = $params['filter']['post_type'];
 
-        if ( isset( $params['filter']['selections'] ) ) {
-            return $this->handle_create_filter_with_selections_request( $post_type, $prompt, $params['filter']['selections'] );
+        if ( isset( $params['filter']['selections'], $params['filter']['pii'], $params['filter']['filtered_fields'] ) ) {
+            return $this->handle_create_filter_with_selections_request( $post_type, $prompt, $params['filter']['selections'], $params['filter']['pii'], $params['filter']['filtered_fields'] );
         } else {
             return $this->handle_create_filter_request( $post_type, $prompt );
         }
@@ -462,7 +462,7 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
          */
 
         $response = Disciple_Tools_AI_API::list_posts( $post_type, $prompt );
-        if ( isset( $response['status'] ) && $response['status'] === 'multiple_options_detected' ) {
+        if ( isset( $response['status'] ) && in_array( $response['status'], [ 'error', 'multiple_options_detected' ] ) ) {
             return $response;
         }
 
@@ -476,13 +476,23 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
             'pii' => $response['pii'] ?? [],
             'connections' => $response['connections'] ?? [],
             'filter' => $response['filter'] ?? [],
-            'posts' => $response['posts'] ?? []
+            'text_search' => $response['text_search'] ?? null,
+            'posts' => $response['posts'] ?? [],
+            'inferred' => $response['inferred'] ?? []
         ];
     }
 
-    private function handle_create_filter_with_selections_request( $post_type, $prompt, $selections ): array {
+    private function handle_create_filter_with_selections_request( $post_type, $prompt, $selections, $pii, $filtered_fields ): array {
 
-        $response = Disciple_Tools_AI_API::list_posts_with_selections( $post_type, $prompt, $selections );
+        $response = Disciple_Tools_AI_API::list_posts_with_selections( $post_type, $prompt, $selections, $pii, $filtered_fields );
+
+        /**
+         * Ensure any encountered errors are echoed directly back to calling client.
+         */
+
+        if ( isset( $response['status'] ) && $response['status'] == 'error' ) {
+            return $response;
+        }
 
         /**
          * Finally, the finish line - return the response.
@@ -492,7 +502,9 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
             'status' => 'success',
             'prompt' => $response['prompt'] ?? [],
             'filter' => $response['filter'] ?? [],
-            'posts' => $response['posts'] ?? []
+            'text_search' => $response['text_search'] ?? null,
+            'posts' => $response['posts'] ?? [],
+            'inferred' => $response['inferred'] ?? []
         ];
     }
 

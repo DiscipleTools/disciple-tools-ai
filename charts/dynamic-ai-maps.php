@@ -8,11 +8,11 @@ if ( !defined( 'ABSPATH' ) ) { exit; } // Exit if accessed directly.
 
 class Disciple_Tools_AI_Dynamic_Maps extends DT_Metrics_Chart_Base
 {
-    public $base_slug = 'disciple-tools-ai-metrics'; // lowercase
-    public $base_title = 'Disciple Tools AI Metrics';
+    public $base_slug = 'records'; // lowercase
+    public $base_title = 'Records';
 
-    public $title = 'Dynamic AI Maps';
-    public $slug = 'dynamic_ai_maps'; // lowercase
+    public $title = 'AI Map';
+    public $slug = 'dynamic_ai_map'; // lowercase
     public $js_object_name = 'wp_js_object'; // This object will be loaded into the metrics.js file by the wp_localize_script.
     public $js_file_name = 'dynamic-ai-maps.js'; // should be full file name plus extension
     public $permissions = [ 'dt_all_access_contacts', 'view_project_metrics' ];
@@ -68,7 +68,8 @@ class Disciple_Tools_AI_Dynamic_Maps extends DT_Metrics_Chart_Base
                     'nonce' => wp_create_nonce( 'wp_rest' )
                 ],
                 'translations' => [
-                    'placeholder' => __( 'Describe the map you wish to view...', 'disciple-tools-ai' ),
+                    'placeholder' => __( 'Query the map: "Active contacts", "Baptized Contacts", ', 'disciple-tools-ai' ),
+                    'default_error_msg' => __( 'Process terminated, due to errors!', 'disciple-tools-ai' ),
                     'details_title' => __( 'Maps', 'disciple-tools-ai' ),
                     'multiple_options' => [
                         'title' => __( 'Multiple Options Detected', 'disciple-tools-ai' ),
@@ -106,8 +107,8 @@ class Disciple_Tools_AI_Dynamic_Maps extends DT_Metrics_Chart_Base
         $prompt = $params['prompt'];
         $post_type = $params['post_type'];
 
-        if ( isset( $params['selections'] ) ) {
-            return $this->handle_create_filter_with_selections_request( $post_type, $prompt, $params['selections'] );
+        if ( isset( $params['selections'], $params['pii'], $params['filtered_fields'] ) ) {
+            return $this->handle_create_filter_with_selections_request( $post_type, $prompt, $params['selections'], $params['pii'], $params['filtered_fields'] );
         } else {
             return $this->handle_create_filter_request( $post_type, $prompt );
         }
@@ -121,7 +122,7 @@ class Disciple_Tools_AI_Dynamic_Maps extends DT_Metrics_Chart_Base
          */
 
         $response = Disciple_Tools_AI_API::list_posts( $post_type, $prompt );
-        if ( isset( $response['status'] ) && $response['status'] === 'multiple_options_detected' ) {
+        if ( isset( $response['status'] ) && in_array( $response['status'], [ 'error', 'multiple_options_detected' ] ) ) {
             return $response;
         }
 
@@ -147,13 +148,23 @@ class Disciple_Tools_AI_Dynamic_Maps extends DT_Metrics_Chart_Base
             'pii' => $response['pii'] ?? [],
             'connections' => $response['connections'] ?? [],
             'filter' => $response['filter'] ?? [],
-            'points' => $geojson_points
+            'text_search' => $response['text_search'] ?? null,
+            'points' => $geojson_points,
+            'inferred' => $response['inferred'] ?? []
         ];
     }
 
-    private function handle_create_filter_with_selections_request( $post_type, $prompt, $selections ): array {
+    private function handle_create_filter_with_selections_request( $post_type, $prompt, $selections, $pii, $filtered_fields ): array {
 
-        $response = Disciple_Tools_AI_API::list_posts_with_selections( $post_type, $prompt, $selections );
+        $response = Disciple_Tools_AI_API::list_posts_with_selections( $post_type, $prompt, $selections, $pii, $filtered_fields );
+
+        /**
+         * Ensure any encountered errors are echoed directly back to calling client.
+         */
+
+        if ( isset( $response['status'] ) && $response['status'] == 'error' ) {
+            return $response;
+        }
 
         /**
          * Next, filter out records with valid location metadata and format in required
@@ -175,7 +186,9 @@ class Disciple_Tools_AI_Dynamic_Maps extends DT_Metrics_Chart_Base
             'status' => 'success',
             'prompt' => $response['prompt'] ?? [],
             'filter' => $response['filter'] ?? [],
-            'points' => $geojson_points
+            'text_search' => $response['text_search'] ?? null,
+            'points' => $geojson_points,
+            'inferred' => $response['inferred'] ?? []
         ];
     }
 }

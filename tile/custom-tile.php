@@ -325,12 +325,18 @@ class Disciple_Tools_AI_Tile
                                  * If so, then display modal with connection options.
                                  */
 
-                                if ((response?.status === 'multiple_options_detected') && (response?.multiple_options)) {
-                                    window.show_multiple_options_modal(response.multiple_options);
+                                if (response?.status === 'error') {
+                                    alert( response?.message );
+
+                                    document.getElementById('ai_filter_spinner').style.display = 'none';
+                                    document.getElementById('ai_filter_icon').style.display = 'inline-block';
+
+                                } else if ((response?.status === 'multiple_options_detected') && (response?.multiple_options)) {
+                                    window.show_multiple_options_modal(response.multiple_options, response?.pii, response?.fields);
 
                                 } else if ((response?.status === 'success') && (response?.filter)) {
 
-                                    create_custom_filter(response.filter);
+                                    create_custom_filter(response.filter, response?.inferred, response?.text_search);
 
                                     // Stop spinning....
                                     document.getElementById('ai_filter_spinner').style.display = 'none';
@@ -352,7 +358,7 @@ class Disciple_Tools_AI_Tile
                     });
                 }
 
-                window.show_multiple_options_modal = (multiple_options) => {
+                window.show_multiple_options_modal = (multiple_options, pii, filter_fields) => {
                     const modal = $('#modal-small');
                     if (modal) {
 
@@ -507,6 +513,8 @@ class Disciple_Tools_AI_Tile
                             <button class="button" data-close aria-label="submit" type="button">
                                 <span aria-hidden="true">${window.lodash.escape(settings.translations.multiple_options.close_but)}</span>
                             </button>
+                            <input id="multiple_options_filtered_fields" type="hidden" value="${encodeURIComponent( JSON.stringify(filter_fields) )}" />
+                            <input id="multiple_options_pii" type="hidden" value="${encodeURIComponent( JSON.stringify(pii) )}" />
                         `;
 
                         $(modal).find('#modal-small-content').html(html);
@@ -534,7 +542,9 @@ class Disciple_Tools_AI_Tile
                     const payload = {
                         "prompt": document.getElementById('ai-search').value,
                         "post_type": settings.post_type,
-                        "selections": window.package_multiple_options_selections()
+                        "selections": window.package_multiple_options_selections(),
+                        "filtered_fields": JSON.parse( decodeURIComponent( document.getElementById('multiple_options_filtered_fields').value ) ),
+                        "pii": JSON.parse( decodeURIComponent( document.getElementById('multiple_options_pii').value ) )
                     };
 
                     // Close modal and proceed with re-submission.
@@ -560,7 +570,11 @@ class Disciple_Tools_AI_Tile
 
                         // If successful, load points.
                         if ((data?.status === 'success') && (data?.filter)) {
-                            create_custom_filter(data.filter);
+                            create_custom_filter(data.filter, data?.inferred, data?.text_search);
+
+                        } else if (data?.status === 'error') {
+                            alert( data?.message );
+
                         }
 
                         // Stop spinning....
@@ -643,7 +657,7 @@ class Disciple_Tools_AI_Tile
                     return selections;
                 }
 
-                window.create_custom_filter = (filter) => {
+                window.create_custom_filter = (filter, inferred_fields, text_search = null) => {
 
                     /**
                      * Assuming valid fields have been generated and required shared
@@ -651,7 +665,7 @@ class Disciple_Tools_AI_Tile
                      * list refresh.
                      */
 
-                    if (filter?.fields && window.SHAREDFUNCTIONS?.add_custom_filter && window.SHAREDFUNCTIONS?.reset_split_by_filters) {
+                    if (inferred_fields && window.SHAREDFUNCTIONS?.add_custom_filter && window.SHAREDFUNCTIONS?.reset_split_by_filters) {
 
                         /**
                          * First, attempt to identify labels to be used based on returned
@@ -659,20 +673,18 @@ class Disciple_Tools_AI_Tile
                          */
 
                         let labels = [];
-                        if (Array.isArray(filter.fields) && window.SHAREDFUNCTIONS?.create_name_value_label) {
-                            filter.fields.forEach((field) => {
-                                for (const [key, filters] of Object.entries(field)) {
+                        if (Array.isArray(inferred_fields) && window.SHAREDFUNCTIONS?.create_name_value_label) {
+                            inferred_fields.forEach((field) => {
+                                if (field?.field_key && field?.field_value) {
+                                    const {field_key, field_value} = field;
+                                    let array_field_values = !Array.isArray(field_value) ? [field_value] : field_value;
 
-                                    if (key && Array.isArray(filters)) {
-                                        filters.forEach((filter) => {
-
-                                            const {newLabel} = window.SHAREDFUNCTIONS?.create_name_value_label(key, filter, isNaN(filter) ? filter : '', window?.list_settings);
-                                            if (newLabel) {
-                                                labels.push(newLabel);
-                                            }
-
-                                        });
-                                    }
+                                    array_field_values.forEach((value) => {
+                                        const {newLabel} = window.SHAREDFUNCTIONS?.create_name_value_label(field_key, value, isNaN(value) ? value : '', window?.list_settings);
+                                        if (newLabel) {
+                                            labels.push(newLabel);
+                                        }
+                                    });
                                 }
                             });
                         }
@@ -681,7 +693,8 @@ class Disciple_Tools_AI_Tile
                          * Determine status field to be appended to filter fields.
                          */
 
-                        if ( window.SHAREDFUNCTIONS.get_json_from_local_storage && settings.settings?.status_field?.status_key && settings.settings?.status_field?.archived_key ) {
+                        const status_detected = Array.isArray(filter) && filter.filter((field) => !!field[settings.settings.status_field.status_key]).length > 0;
+                        if ( !status_detected && window.SHAREDFUNCTIONS.get_json_from_local_storage && settings.settings?.status_field?.status_key && settings.settings?.status_field?.archived_key ) {
 
                             // Determine if archived records are to be shown.
                             const show_archived_records = window.SHAREDFUNCTIONS.get_json_from_local_storage(
@@ -694,23 +707,23 @@ class Disciple_Tools_AI_Tile
                             let status = {};
                             status[settings.settings.status_field.status_key] = [ `${show_archived_records ? '' : '-'}${settings.settings.status_field.archived_key}` ];
 
-                            // Finally append to filter fields.
-                            if ( Array.isArray( filter.fields ) ) {
-                                filter.fields.push( status );
+                            // Finally append to filter fields, only if it's in a false state.
+                            if ( !show_archived_records && Array.isArray( filter ) ) {
+                                filter.push( status );
                             }
                         }
 
                         /**
-                         * Proceed with Custom AI Filter creation and list refresh.
+                         * Proceed with Custom AI Filter creation and list refresh. Ensure text searches
+                         * overwrite any other filter fields.
                          */
 
+                        let query = text_search ? { text: text_search } : { fields: filter };
                         window.SHAREDFUNCTIONS.reset_split_by_filters();
                         window.SHAREDFUNCTIONS.add_custom_filter(
                             settings.translations['custom_filter'],
                             'custom-filter',
-                            {
-                                fields: filter.fields
-                            },
+                            query,
                             labels
                         );
                     }
