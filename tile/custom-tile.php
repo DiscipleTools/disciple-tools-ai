@@ -128,7 +128,11 @@ class Disciple_Tools_AI_Tile
                         document.querySelector('#dt-ai-summary-button').classList.remove('loading');
 
                         // Determine action to take based on endpoint response.
-                        if ( data?.updated ) {
+                        if ( data?.data?.status === 401 && data?.message ) {
+                            document.querySelector('#dt-ai-summary').innerText = data?.message;
+                            $('.grid').masonry('layout');
+
+                        } else if ( data?.updated ) {
                             window.location.reload();
 
                         } else {

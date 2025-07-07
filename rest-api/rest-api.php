@@ -32,6 +32,10 @@ class Disciple_Tools_AI_Endpoints
     }
 
     public function summarize( WP_REST_Request $request ) {
+        if ( !$this->has_permission() ) {
+            return new WP_Error( __METHOD__, __( 'Unauthorized: Unable to summarize!', 'disciple-tools-ai' ), [ 'status' => 401 ] );
+        }
+
         // Get the prompt from the request and make a call to the OpenAI API to summarize and return the response
         $prompt = $request->get_param( 'prompt' );
 
