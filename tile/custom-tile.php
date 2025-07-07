@@ -201,35 +201,22 @@ class Disciple_Tools_AI_Tile
 
             #ai-search-bar button.ai-clear-button {
                 position: absolute;
-                inset-inline-end: 1.75rem;
-                top: 0.4rem;
+                inset-inline-end: 0.5rem;
+                top: 0.99rem;
                 border: 0;
                 background-color: #FFFFFF;
                 padding: 2px;
                 height: var(--search-input-height);
             }
 
-            #ai-search-bar button.ai-filter-button {
-                position: absolute;
-                inset-inline-end: 0.5rem;
-                top: 0.4rem;
-                border: 2px;
-                background-color: #FFFFFF;
-                padding: 2px;
-                height: var(--search-input-height);
-            }
             /* ===== Search & Filter ===== */
         </style>
 
         <div id="ai-search-filter">
-            <div id="ai-search-bar">
-                <input type="text" id="ai-search" placeholder="<?php esc_html_e( 'Describe list to show...', 'disciple-tools-ai' ); ?>" />
-                <button id="ai-clear-button" style="display: none;" class="ai-clear-button mdi mdi-close" onclick="clear_ai_filter();"></button>
-                <button class="ai-filter-button" onclick="create_ai_filter();">
-                  <i id="ai_filter_icon" class="mdi mdi-star-four-points-outline"></i>
-                  <span id="ai_filter_spinner" style="display: none; height: 16px; width: 16px" class="loading-spinner active"></span>
-                </button>
-            </div>
+            <button id="ai_prompt_button" class="button no-margin icon-button" style="font-size:large;padding: 0.1rem 0.75rem;min-height: 100%;" onclick="show_ai_prompt_modal();">
+                <i id="ai_prompt_icon" class="mdi mdi-star-four-points-outline"></i>
+                <span id="ai_prompt_spinner" style="display: none; height: 16px; width: 16px" class="loading-spinner active"></span>
+            </button>
         </div>
 
         <script>
@@ -242,6 +229,12 @@ class Disciple_Tools_AI_Tile
                     'nonce' => wp_create_nonce( 'wp_rest' ),
                     'translations' => [
                         'custom_filter' => __( 'Custom AI Filter', 'disciple-tools-ai' ),
+                        'ai_prompt' => [
+                            'title' => __( 'AI Filter Prompt', 'disciple-tools-ai' ),
+                            'prompt_placeholder' => __( 'Describe list to show...', 'disciple-tools-ai' ),
+                            'submit_but' => __( 'Submit', 'disciple-tools-ai' ),
+                            'close_but' => __( 'Close', 'disciple-tools-ai' )
+                        ],
                         'multiple_options' => [
                             'title' => __( 'Multiple Options Detected', 'disciple-tools-ai' ),
                             'locations' => __( 'Locations', 'disciple-tools-ai' ),
@@ -265,17 +258,6 @@ class Disciple_Tools_AI_Tile
                  * Proceed with AI filter prompt setup.
                  */
 
-                document.getElementById('ai-search').addEventListener('keyup', function(e) {
-                    e.preventDefault();
-
-                    if (e.key === 'Enter') { // Enter key pressed.
-                        create_ai_filter();
-
-                    } else { // Manage field clearing option.
-                        show_ai_filter_clear_option();
-                    }
-                });
-
                 window.show_ai_filter_clear_option = () => {
                     const text = document.getElementById('ai-search').value;
                     const clear_button = document.getElementById('ai-clear-button');
@@ -292,15 +274,13 @@ class Disciple_Tools_AI_Tile
                     document.getElementById('ai-search').value = '';
                 }
 
-                window.create_ai_filter = () => {
-                    const text = document.getElementById('ai-search').value;
-
+                window.create_ai_filter = (text) => {
                     if (!text) {
                         return;
                     }
 
-                    const dt_ai_filter_prompt_spinner = $('#ai_filter_spinner');
-                    const dt_ai_filter_prompt_button = $('#ai_filter_icon');
+                    const dt_ai_filter_prompt_spinner = $('#ai_prompt_spinner');
+                    const dt_ai_filter_prompt_button = $('#ai_prompt_icon');
 
                     dt_ai_filter_prompt_button.fadeOut('fast', () => {
                         dt_ai_filter_prompt_spinner.fadeIn('slow', () => {
@@ -328,8 +308,8 @@ class Disciple_Tools_AI_Tile
                                 if (response?.status === 'error') {
                                     alert( response?.message );
 
-                                    document.getElementById('ai_filter_spinner').style.display = 'none';
-                                    document.getElementById('ai_filter_icon').style.display = 'inline-block';
+                                    document.getElementById('ai_prompt_spinner').style.display = 'none';
+                                    document.getElementById('ai_prompt_icon').style.display = 'inline-block';
 
                                 } else if ((response?.status === 'multiple_options_detected') && (response?.multiple_options)) {
                                     window.show_multiple_options_modal(response.multiple_options, response?.pii, response?.fields);
@@ -339,8 +319,8 @@ class Disciple_Tools_AI_Tile
                                     create_custom_filter(response.filter, response?.inferred, response?.text_search);
 
                                     // Stop spinning....
-                                    document.getElementById('ai_filter_spinner').style.display = 'none';
-                                    document.getElementById('ai_filter_icon').style.display = 'inline-block';
+                                    document.getElementById('ai_prompt_spinner').style.display = 'none';
+                                    document.getElementById('ai_prompt_icon').style.display = 'inline-block';
                                 }
                             })
                             .catch(error => {
@@ -356,6 +336,71 @@ class Disciple_Tools_AI_Tile
 
                         });
                     });
+                }
+
+                window.show_ai_prompt_modal = () => {
+                    const modal = $('#modal-large');
+                    if (modal) {
+                        $(modal).find('#modal-large-title').html(`${window.lodash.escape(settings.translations.ai_prompt.title)}`);
+
+                        // Add HTML to modal.
+                        const html = `
+                            <div id="ai-search-bar">
+                                <input type="text" id="ai-search" placeholder="${window.lodash.escape(settings.translations.ai_prompt.prompt_placeholder)}" />
+                                <button id="ai-clear-button" style="display: none;" class="ai-clear-button mdi mdi-close" onclick="clear_ai_filter();"></button>
+                            </div>
+                            <br>
+                            <button class="button" aria-label="submit" type="button" id="ai_prompt_submit">
+                                <span aria-hidden="true">${window.lodash.escape(settings.translations.ai_prompt.submit_but)}</span>
+                            </button>
+                            <button class="button" data-close aria-label="submit" type="button">
+                                <span aria-hidden="true">${window.lodash.escape(settings.translations.ai_prompt.close_but)}</span>
+                            </button>
+                        `;
+                        $(modal).find('#modal-large-content').html(html);
+
+                        // Add event listeners to modal.
+                        $(document).off('open.zf.reveal', '[data-reveal]'); // Remove existing modal open listeners
+                        $(document).on('open.zf.reveal', '[data-reveal]', function (evt) {
+                            document.getElementById('ai-search').addEventListener('keyup', function(e) {
+                                e.preventDefault();
+
+                                if (e.key === 'Enter') { // Enter key pressed.
+                                    window.handle_ai_prompt_submit(modal);
+
+                                } else { // Manage field clearing option.
+                                    window.show_ai_filter_clear_option();
+                                }
+                            });
+                        });
+
+                        // Remove existing modal close listeners
+                        $(document).off('closed.zf.reveal', '[data-reveal]');
+                        $(document).on('closed.zf.reveal', '[data-reveal]', function (evt) {
+                            console.log('closed', evt);
+                            // Remove click event listener, to avoid a build-up of event listeners.
+                            $(document).off('click', '#ai_prompt_submit');    
+                            $('#ai_prompt_submit').off('click');
+                        });
+
+                        // Remove any existing event listeners first to prevent duplicates
+                        $(document).off('click', '#ai_prompt_submit');
+                        $('#ai_prompt_submit').off('click');
+                        $(document).on('click', '#ai_prompt_submit', function (evt) {
+                            window.handle_ai_prompt_submit(modal);
+                        });
+
+                        // Open modal.
+                        $(modal).foundation('open');
+                        $(modal).css('top', '150px');
+                    }
+                }
+
+                window.handle_ai_prompt_submit = (modal) => {
+                    window.create_ai_filter( document.getElementById('ai-search').value );
+
+                    // Close modal.
+                    $(modal).foundation('close');
                 }
 
                 window.show_multiple_options_modal = (multiple_options, pii, filter_fields) => {
@@ -523,8 +568,8 @@ class Disciple_Tools_AI_Tile
                         $(modal).css('top', '150px');
 
                         $(document).on('closed.zf.reveal', '[data-reveal]', function (evt) {
-                            document.getElementById('ai_filter_spinner').style.display = 'none';
-                            document.getElementById('ai_filter_icon').style.display = 'inline-block';
+                            document.getElementById('ai_prompt_spinner').style.display = 'none';
+                            document.getElementById('ai_prompt_icon').style.display = 'inline-block';
 
                             // Remove click event listener, to avoid a build-up and duplication of modal selection submissions.
                             $(document).off('click', '#multiple_options_submit');
@@ -551,8 +596,8 @@ class Disciple_Tools_AI_Tile
                     $(modal).foundation('close');
 
                     // Ensure spinner is still spinning.
-                    document.getElementById('ai_filter_spinner').style.display = 'inline-block';
-                    document.getElementById('ai_filter_icon').style.display = 'none';
+                    document.getElementById('ai_prompt_spinner').style.display = 'inline-block';
+                    document.getElementById('ai_prompt_icon').style.display = 'none';
 
                     // Submit selections.
                     jQuery.ajax({
@@ -578,16 +623,16 @@ class Disciple_Tools_AI_Tile
                         }
 
                         // Stop spinning....
-                        document.getElementById('ai_filter_spinner').style.display = 'none';
-                        document.getElementById('ai_filter_icon').style.display = 'inline-block';
+                        document.getElementById('ai_prompt_spinner').style.display = 'none';
+                        document.getElementById('ai_prompt_icon').style.display = 'inline-block';
 
                     })
                     .fail(function (err) {
                         console.log('error')
                         console.log(err)
 
-                        document.getElementById('ai_filter_spinner').style.display = 'none';
-                        document.getElementById('ai_filter_icon').style.display = 'inline-block';
+                        document.getElementById('ai_prompt_spinner').style.display = 'none';
+                        document.getElementById('ai_prompt_icon').style.display = 'inline-block';
                     });
                 }
 
