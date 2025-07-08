@@ -137,7 +137,7 @@ class Disciple_Tools_AI_Data {
 
         $brief = [ 'The following record types / post types are allowed:' ];
         $brief = array_merge( $brief, $post_types );
-        
+
         /**
          * Fetch list of fields associated with given post type and list
          * keys.
