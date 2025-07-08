@@ -32,15 +32,15 @@ class Disciple_Tools_AI_Endpoints
     }
 
     public function summarize( WP_REST_Request $request ) {
-        if ( !$this->has_permission() ) {
+        $post_type = $request->get_param( 'post_type' ) ?? '';
+        $post_id = $request->get_param( 'post_id' ) ?? '';
+
+        if ( !DT_Posts::can_view( $post_type, $post_id ) ) {
             return new WP_Error( __METHOD__, __( 'Unauthorized: Unable to summarize!', 'disciple-tools-ai' ), [ 'status' => 401 ] );
         }
 
         // Get the prompt from the request and make a call to the OpenAI API to summarize and return the response
         $prompt = $request->get_param( 'prompt' );
-
-        $post_type = $request->get_param( 'post_type' );
-        $post_id = $request->get_param( 'post_id' );
 
         $llm_endpoint_root = get_option( 'DT_AI_llm_endpoint' );
         $llm_api_key = get_option( 'DT_AI_llm_api_key' );
