@@ -9,7 +9,7 @@ class Disciple_Tools_AI_API {
     public static $module_default_id_dt_ai_ml_list_filter = 'dt_ai_ml_list_filter';
     public static $module_default_id_dt_ai_metrics_dynamic_maps = 'dt_ai_metrics_dynamic_maps';
 
-    public static function list_posts( string $post_type, string $prompt ): array {
+    public static function list_posts( string $post_type, string $prompt, $args = [] ): array {
 
         /**
          * Before submitting to LLM for analysis, ensure to obfuscate any PII.
@@ -35,15 +35,23 @@ class Disciple_Tools_AI_API {
          * Following obfuscation, proceed with LLM call to parse prompt for relevant fields.
          */
 
-        $fields = self::parse_prompt_for_fields( $post_type, $original_prompt, $prompt );
+        $inferred = self::parse_prompt_for_fields( $post_type, $original_prompt, $prompt, $args );
 
         /**
          * Ensure any encountered errors are echoed back to calling client.
          */
 
-        if ( isset( $fields['status'] ) && $fields['status'] == 'error' ) {
-            return $fields;
+        if ( isset( $inferred['status'] ) && $inferred['status'] == 'error' ) {
+            return $inferred;
         }
+
+        /**
+         * If no exceptions, determine post type (first element for now) to be used and
+         * extract fields.
+         */
+
+        $post_type = $inferred['post_types'][0] ?? $post_type;
+        $fields = $inferred['fields'] ?? [];
 
         /**
          * Next, identify any connections within incoming prompt; especially
@@ -114,7 +122,8 @@ class Disciple_Tools_AI_API {
                     'posts' => $multiple_posts
                 ],
                 'pii' => $pii,
-                'fields' => $fields
+                'fields' => $fields,
+                'inferred' => $inferred
             ];
         }
 
@@ -166,7 +175,7 @@ class Disciple_Tools_AI_API {
             'filter' => $reshaped_fields['fields'],
             'text_search' => $reshaped_fields['text_search'] ?? null,
             'posts' => $list_posts,
-            'inferred' => $fields
+            'inferred' => $inferred
         ];
     }
 
@@ -199,7 +208,7 @@ class Disciple_Tools_AI_API {
         ];
     }
 
-    public static function list_posts_with_selections( string $post_type, string $prompt, array $selections, array $pii, array $filtered_fields ): array {
+    public static function list_posts_with_selections( string $post_type, string $prompt, array $selections, array $pii, array $inferred ): array {
 
         /**
          * First, update prompt with selected replacements.
@@ -210,10 +219,17 @@ class Disciple_Tools_AI_API {
         $posts = self::reshape_selection_mappings( $selections['posts'] ?? [], $pii['mappings'], $users['processed_prompts'] );
 
         /**
+         * If no exceptions, determine post type (first element for now) to be used and
+         * extract fields.
+         */
+
+        $post_type = $inferred['post_types'][0] ?? $post_type;
+
+        /**
          * Ensure any remaining obfuscated entries are mapped back into plain prompt values, before executing returned filter fields.
          */
 
-        $reshaped_fields = self::reshape_fields_to_required_list_post_query_structure( $post_type, $filtered_fields, $pii['mappings'], [
+        $reshaped_fields = self::reshape_fields_to_required_list_post_query_structure( $post_type, $inferred['fields'] ?? [], $pii['mappings'], [
             'locations' => $locations['mappings'],
             'users' => $users['mappings'],
             'posts' => $posts['mappings']
@@ -245,11 +261,11 @@ class Disciple_Tools_AI_API {
             'filter' => $reshaped_fields['fields'],
             'text_search' => $reshaped_fields['text_search'] ?? null,
             'posts' => $list_posts,
-            'inferred' => $filtered_fields
+            'inferred' => $inferred
         ];
     }
 
-    public static function parse_prompt_for_fields( string $post_type, string $original_prompt, string $parsed_prompt ): array {
+    public static function parse_prompt_for_fields( string $post_type, string $original_prompt, string $parsed_prompt, $args = [] ): array {
         if ( !isset( $post_type, $parsed_prompt ) ) {
             return [];
         }
@@ -257,7 +273,7 @@ class Disciple_Tools_AI_API {
         $llm_endpoint_root = get_option( 'DT_AI_llm_endpoint' );
         $llm_api_key = get_option( 'DT_AI_llm_api_key' );
         $llm_model = get_option( 'DT_AI_llm_model' );
-        $dt_ai_field_specs = apply_filters( 'dt_ai_field_specs', [], $post_type );
+        $dt_ai_field_specs = apply_filters( 'dt_ai_field_specs', [], $post_type, $args );
         $llm_endpoint = $llm_endpoint_root . '/chat/completions';
 
         /**
@@ -633,7 +649,7 @@ class Disciple_Tools_AI_API {
         return $parsed_post_names;
     }
 
-    public static function convert_posts_to_geojson( $posts, $post_type ): array {
+    public static function convert_posts_to_geojson( $posts ): array {
         $features = [];
         $location_grid_meta_key = 'location_grid_meta';
 
@@ -647,7 +663,7 @@ class Disciple_Tools_AI_API {
                                 'address' => $location['address'] ?? '',
                                 'post_id' => $post['ID'],
                                 'name' => $post['name'] ?? ( $location['label'] ?? '' ),
-                                'post_type' => $post_type
+                                'post_type' => $post['post_type']
                             ),
                             'geometry' => array(
                                 'type' => 'Point',

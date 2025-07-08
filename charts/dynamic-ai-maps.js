@@ -291,7 +291,7 @@
           document.getElementById('filter_icon').style.display = 'inline-block';
 
         } else if ((data?.status === 'multiple_options_detected') && (data?.multiple_options)) {
-          window.show_multiple_options_modal(data.multiple_options, data?.pii, data?.fields);
+          window.show_multiple_options_modal(data.multiple_options, data?.pii, data?.inferred);
 
         } else if ((data?.status === 'success') && (data?.points)) {
           window.load_points(data.points);
@@ -309,7 +309,7 @@
       });
     }
 
-    window.show_multiple_options_modal = (multiple_options, pii, filter_fields) => {
+    window.show_multiple_options_modal = (multiple_options, pii, inferred) => {
       const modal = $('#modal-small');
       if (modal) {
 
@@ -464,7 +464,7 @@
                 <button class="button" data-close aria-label="submit" type="button">
                     <span aria-hidden="true">${window.lodash.escape(window.dt_mapbox_metrics.translations.multiple_options.close_but)}</span>
                 </button>
-                <input id="multiple_options_filtered_fields" type="hidden" value="${encodeURIComponent( JSON.stringify(filter_fields) )}" />
+                <input id="multiple_options_inferred" type="hidden" value="${encodeURIComponent( JSON.stringify(inferred) )}" />
                 <input id="multiple_options_pii" type="hidden" value="${encodeURIComponent( JSON.stringify(pii) )}" />
             `;
 
@@ -494,7 +494,7 @@
         "prompt": document.getElementById('search').value,
         "post_type": mapbox_library_api.obj.settings.post_type,
         "selections": window.package_multiple_options_selections(),
-        "filtered_fields": JSON.parse( decodeURIComponent( document.getElementById('multiple_options_filtered_fields').value ) ),
+        "inferred": JSON.parse( decodeURIComponent( document.getElementById('multiple_options_inferred').value ) ),
         "pii": JSON.parse( decodeURIComponent( document.getElementById('multiple_options_pii').value ) )
       };
 

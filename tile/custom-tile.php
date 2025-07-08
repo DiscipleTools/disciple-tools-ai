@@ -332,7 +332,7 @@ class Disciple_Tools_AI_Tile
                                     document.getElementById('ai_filter_icon').style.display = 'inline-block';
 
                                 } else if ((response?.status === 'multiple_options_detected') && (response?.multiple_options)) {
-                                    window.show_multiple_options_modal(response.multiple_options, response?.pii, response?.fields);
+                                    window.show_multiple_options_modal(response.multiple_options, response?.pii, response?.inferred);
 
                                 } else if ((response?.status === 'success') && (response?.filter)) {
 
@@ -358,7 +358,7 @@ class Disciple_Tools_AI_Tile
                     });
                 }
 
-                window.show_multiple_options_modal = (multiple_options, pii, filter_fields) => {
+                window.show_multiple_options_modal = (multiple_options, pii, inferred) => {
                     const modal = $('#modal-small');
                     if (modal) {
 
@@ -513,7 +513,7 @@ class Disciple_Tools_AI_Tile
                             <button class="button" data-close aria-label="submit" type="button">
                                 <span aria-hidden="true">${window.lodash.escape(settings.translations.multiple_options.close_but)}</span>
                             </button>
-                            <input id="multiple_options_filtered_fields" type="hidden" value="${encodeURIComponent( JSON.stringify(filter_fields) )}" />
+                            <input id="multiple_options_inferred" type="hidden" value="${encodeURIComponent( JSON.stringify(inferred) )}" />
                             <input id="multiple_options_pii" type="hidden" value="${encodeURIComponent( JSON.stringify(pii) )}" />
                         `;
 
@@ -543,7 +543,7 @@ class Disciple_Tools_AI_Tile
                         "prompt": document.getElementById('ai-search').value,
                         "post_type": settings.post_type,
                         "selections": window.package_multiple_options_selections(),
-                        "filtered_fields": JSON.parse( decodeURIComponent( document.getElementById('multiple_options_filtered_fields').value ) ),
+                        "inferred": JSON.parse( decodeURIComponent( document.getElementById('multiple_options_inferred').value ) ),
                         "pii": JSON.parse( decodeURIComponent( document.getElementById('multiple_options_pii').value ) )
                     };
 
