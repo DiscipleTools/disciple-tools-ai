@@ -44,7 +44,7 @@ function create_filter() {
         temp_spinner.setAttribute('class', 'loading-spinner inactive');
 
       } else if ((json?.status === 'multiple_options_detected') && (json?.multiple_options)) {
-        show_multiple_options_modal(json.multiple_options, json?.pii, json?.fields);
+        show_multiple_options_modal(json.multiple_options, json?.pii, json?.inferred);
 
       } else if ((json?.status === 'success') && (json?.posts)) {
 
@@ -81,7 +81,7 @@ function clear_filter() {
   document.getElementById('search').value = '';
 }
 
-function show_multiple_options_modal(multiple_options, pii, filter_fields) {
+function show_multiple_options_modal(multiple_options, pii, inferred) {
 
   const modal = $('#modal-small');
   if (modal) {
@@ -237,7 +237,7 @@ function show_multiple_options_modal(multiple_options, pii, filter_fields) {
         <button class="button" data-close aria-label="submit" type="button">
             <span aria-hidden="true">${window.lodash.escape(window.dt_ai_obj.translations.multiple_options.close_but)}</span>
         </button>
-        <input id="multiple_options_filtered_fields" type="hidden" value="${encodeURIComponent( JSON.stringify(filter_fields) )}" />
+        <input id="multiple_options_inferred" type="hidden" value="${encodeURIComponent( JSON.stringify(inferred) )}" />
         <input id="multiple_options_pii" type="hidden" value="${encodeURIComponent( JSON.stringify(pii) )}" />
     `;
 
@@ -272,7 +272,7 @@ function handle_multiple_options_submit(modal) {
       prompt: document.getElementById('search').value,
       post_type: jsObject.default_post_type,
       selections: window.package_multiple_options_selections(),
-      filtered_fields: JSON.parse( decodeURIComponent( document.getElementById('multiple_options_filtered_fields').value ) ),
+      inferred: JSON.parse( decodeURIComponent( document.getElementById('multiple_options_inferred').value ) ),
       pii: JSON.parse( decodeURIComponent( document.getElementById('multiple_options_pii').value ) )
     }
   }

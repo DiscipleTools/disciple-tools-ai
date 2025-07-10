@@ -1,6 +1,6 @@
-Show all records with no favorite set. ==//== [{"field_key": "favorite", "field_value": "", "intent": "NOT_SET" }]
-Display favourite records. ==//== [{"field_key": "favorite", "field_value": "1", "intent": "EQUALS" }]
-Show non favourite records. ==//== [{"field_key": "favorite", "field_value": "0", "intent": "EQUALS" }]
+Show all records with no favorite set. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "favorite", "field_value": "", "intent": "NOT_SET" }]}
+Display favourite records. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "favorite", "field_value": "1", "intent": "EQUALS" }]}
+Show non favourite records. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "favorite", "field_value": "0", "intent": "EQUALS" }]}
 
-Show all records requiring updates. ==//== [{"field_key": "requires_update", "field_value": "1", "intent": "EQUALS" }]
-Display contacts no longer requiring updates. ==//== [{"field_key": "requires_update", "field_value": "0", "intent": "EQUALS" }]
+Show all records requiring updates. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "requires_update", "field_value": "1", "intent": "EQUALS" }]}
+Display contacts no longer requiring updates. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "requires_update", "field_value": "0", "intent": "EQUALS" }]}

@@ -107,8 +107,8 @@ class Disciple_Tools_AI_Dynamic_Maps extends DT_Metrics_Chart_Base
         $prompt = $params['prompt'];
         $post_type = $params['post_type'];
 
-        if ( isset( $params['selections'], $params['pii'], $params['filtered_fields'] ) ) {
-            return $this->handle_create_filter_with_selections_request( $post_type, $prompt, $params['selections'], $params['pii'], $params['filtered_fields'] );
+        if ( isset( $params['selections'], $params['pii'], $params['inferred'] ) ) {
+            return $this->handle_create_filter_with_selections_request( $post_type, $prompt, $params['selections'], $params['pii'], $params['inferred'] );
         } else {
             return $this->handle_create_filter_request( $post_type, $prompt );
         }
@@ -121,7 +121,7 @@ class Disciple_Tools_AI_Dynamic_Maps extends DT_Metrics_Chart_Base
          * filter locations and then return.
          */
 
-        $response = Disciple_Tools_AI_API::list_posts( $post_type, $prompt );
+        $response = Disciple_Tools_AI_API::list_posts( $post_type, $prompt, [ 'all_post_types' => true ] );
         if ( isset( $response['status'] ) && in_array( $response['status'], [ 'error', 'multiple_options_detected' ] ) ) {
             return $response;
         }
@@ -136,7 +136,7 @@ class Disciple_Tools_AI_Dynamic_Maps extends DT_Metrics_Chart_Base
             return isset( $post[$location_grid_meta_key] ) && is_array( $post[$location_grid_meta_key] ) && count( $post[$location_grid_meta_key] ) > 0;
         } );
 
-        $geojson_points = Disciple_Tools_AI_API::convert_posts_to_geojson( $filtered_posts, $post_type );
+        $geojson_points = Disciple_Tools_AI_API::convert_posts_to_geojson( $filtered_posts );
 
         /**
          * Finally, the finish line - return the response.
@@ -154,9 +154,9 @@ class Disciple_Tools_AI_Dynamic_Maps extends DT_Metrics_Chart_Base
         ];
     }
 
-    private function handle_create_filter_with_selections_request( $post_type, $prompt, $selections, $pii, $filtered_fields ): array {
+    private function handle_create_filter_with_selections_request( $post_type, $prompt, $selections, $pii, $inferred ): array {
 
-        $response = Disciple_Tools_AI_API::list_posts_with_selections( $post_type, $prompt, $selections, $pii, $filtered_fields );
+        $response = Disciple_Tools_AI_API::list_posts_with_selections( $post_type, $prompt, $selections, $pii, $inferred );
 
         /**
          * Ensure any encountered errors are echoed directly back to calling client.
@@ -176,7 +176,7 @@ class Disciple_Tools_AI_Dynamic_Maps extends DT_Metrics_Chart_Base
             return isset( $post[$location_grid_meta_key] ) && is_array( $post[$location_grid_meta_key] ) && count( $post[$location_grid_meta_key] ) > 0;
         } );
 
-        $geojson_points = Disciple_Tools_AI_API::convert_posts_to_geojson( $filtered_posts, $post_type );
+        $geojson_points = Disciple_Tools_AI_API::convert_posts_to_geojson( $filtered_posts );
 
         /**
          * Finally, the finish line - return the response.

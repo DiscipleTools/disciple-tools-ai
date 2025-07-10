@@ -1,21 +1,21 @@
-Show all baptized contacts. ==//== [{"field_key": "baptized", "field_value": "", "intent": "ANY" }]
-Show contacts not yet baptised. ==//== [{"field_key": "baptized", "field_value": "", "intent": ["ANY", "NOT_EQUALS"] }]
+Show all baptized contacts. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "baptized", "field_value": "", "intent": "ANY" }]}
+Show contacts not yet baptised. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "baptized", "field_value": "", "intent": ["ANY", "NOT_EQUALS"] }]}
 
-Show all contacts who have been baptized by somebody. ==//== [{"field_key": "baptized_by", "field_value": "", "intent": "ANY" }]
-Show contacts not yet baptised by anybody. ==//== [{"field_key": "baptized_by", "field_value": "", "intent": ["ANY", "NOT_EQUALS"] }]
+Show all contacts who have been baptized by somebody. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "baptized_by", "field_value": "", "intent": "ANY" }]}
+Show contacts not yet baptised by anybody. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "baptized_by", "field_value": "", "intent": ["ANY", "NOT_EQUALS"] }]}
 
-Show all contacts who are coached by somebody. ==//== [{"field_key": "coached_by", "field_value": "", "intent": "ANY" }]
-Show contacts not yet coached by anybody. ==//== [{"field_key": "coached_by", "field_value": "", "intent": ["ANY", "NOT_EQUALS"] }]
+Show all contacts who are coached by somebody. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "coached_by", "field_value": "", "intent": "ANY" }]}
+Show contacts not yet coached by anybody. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "coached_by", "field_value": "", "intent": ["ANY", "NOT_EQUALS"] }]}
 
-Show all records with connections to other contacts. ==//== [{"field_key": "relation", "field_value": "", "intent": "ANY" }]
-Show contacts not connected to others. ==//== [{"field_key": "relation", "field_value": "", "intent": ["ANY", "NOT_EQUALS"] }]
+Show all records with connections to other contacts. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "relation", "field_value": "", "intent": "ANY" }]}
+Show contacts not connected to others. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "relation", "field_value": "", "intent": ["ANY", "NOT_EQUALS"] }]}
 
-Show all records with a group coach. ==//== [{"field_key": "group_coach", "field_value": "", "intent": "ANY" }]
-Show contacts without a group coach. ==//== [{"field_key": "group_coach", "field_value": "", "intent": ["ANY", "NOT_EQUALS"] }]
+Show all records with a group coach. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "group_coach", "field_value": "", "intent": "ANY" }]}
+Show contacts without a group coach. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "group_coach", "field_value": "", "intent": ["ANY", "NOT_EQUALS"] }]}
 
-Show records for baptised users a8567D7a2Je81f 9n0oe6 and  708oS6nm1825f9bah70J. ==//== [{"field_key": "baptized_by", "field_value": ["a8567D7a2Je81f 9n0oe6", " 708oS6nm1825f9bah70J"], "intent": "EQUALS"}]
-Show records baptized by 565mfSo27b07nf h9a48J and neJf4976D50eo7ba58fc . ==//== [{"field_key": "baptized_by", "field_value": ["565mfSo27b07nf h9a48J", "neJf4976D50eo7ba58fc "], "intent": "EQUALS" }]
+Show records for baptised users a8567D7a2Je81f 9n0oe6 and  708oS6nm1825f9bah70J. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "baptized_by", "field_value": ["a8567D7a2Je81f 9n0oe6", " 708oS6nm1825f9bah70J"], "intent": "EQUALS"}]}
+Show records baptized by 565mfSo27b07nf h9a48J and neJf4976D50eo7ba58fc . ==//== {"post_types": ["contacts"], "fields": [{"field_key": "baptized_by", "field_value": ["565mfSo27b07nf h9a48J", "neJf4976D50eo7ba58fc "], "intent": "EQUALS" }]}
 
-Show records coached by f Jeah6Sa01aa778er13e4n and 7k8Ff3n71Fk4n8 aaf1rr60a. ==//== [{"field_key": "coached_by", "field_value": ["f Jeah6Sa01aa778er13e4n", "7k8Ff3n71Fk4n8 aaf1rr60a"], "intent": "EQUALS" }]
+Show records coached by f Jeah6Sa01aa778er13e4n and 7k8Ff3n71Fk4n8 aaf1rr60a. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "coached_by", "field_value": ["f Jeah6Sa01aa778er13e4n", "7k8Ff3n71Fk4n8 aaf1rr60a"], "intent": "EQUALS" }]}
 
-Show records which connect to 7 i40jac7lr218fa6aAHj3d. ==//== [{"field_key": "relation", "field_value": "7 i40jac7lr218fa6aAHj3d", "intent": "EQUALS" }]
+Show records which connect to 7 i40jac7lr218fa6aAHj3d. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "relation", "field_value": "7 i40jac7lr218fa6aAHj3d", "intent": "EQUALS" }]}

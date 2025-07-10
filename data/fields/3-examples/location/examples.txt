@@ -1,6 +1,6 @@
-Show me all contacts based in Brazil. ==//== [{"field_key": "location_grid", "field_value": "Brazil", "intent": "EQUALS" }]
-List all contacts in Spain and France ==//== [{"field_key": "location_grid", "field_value": ["Spain", "France"], "intent": "EQUALS" }]
-Show all contacts in Japan or Italy ==//== [{"field_key": "location_grid", "field_value": ["Japan", "Italy"], "intent": "EQUALS" }]
-Show all contacts in the World ==//== [{"field_key": "location_grid", "field_value": "World", "intent": "EQUALS" }]
-Contacts in Mexico ==//== [{"field_key": "location_grid", "field_value": "Mexico", "intent": "EQUALS" }]
+Show me all contacts based in Brazil. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "location_grid", "field_value": "Brazil", "intent": "EQUALS" }]}
+List all contacts in Spain and France ==//== {"post_types": ["contacts"], "fields": [{"field_key": "location_grid", "field_value": ["Spain", "France"], "intent": "EQUALS" }]}
+Show all contacts in Japan or Italy ==//== {"post_types": ["contacts"], "fields": [{"field_key": "location_grid", "field_value": ["Japan", "Italy"], "intent": "EQUALS" }]}
+Show all contacts in the World ==//== {"post_types": ["contacts"], "fields": [{"field_key": "location_grid", "field_value": "World", "intent": "EQUALS" }]}
+Contacts in Mexico ==//== {"post_types": ["contacts"], "fields": [{"field_key": "location_grid", "field_value": "Mexico", "intent": "EQUALS" }]}
 
