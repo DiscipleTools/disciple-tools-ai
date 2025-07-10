@@ -213,9 +213,10 @@ class Disciple_Tools_AI_Tile
         </style>
 
         <div id="ai-search-filter">
-            <button id="ai_prompt_button" class="button no-margin icon-button" style="font-size:large;padding: 0.1rem 0.75rem;min-height: 100%;" onclick="show_ai_prompt_modal();">
-                <i id="ai_prompt_icon" class="mdi mdi-star-four-points-outline"></i>
-                <span id="ai_prompt_spinner" style="display: none; height: 16px; width: 16px" class="loading-spinner active"></span>
+            <button id="ai_prompt_button" class="button no-margin icon-button" style="padding: 0.1rem 0.75rem;min-height: 100%;" onclick="show_ai_prompt_modal();">
+                <i id="ai_prompt_icon" class="mdi mdi-large mdi-star-four-points-outline" style="font-size: large;"></i>
+                <span style="margin-left: 0.5rem;"><?php esc_html_e( 'Search or Filter', 'disciple-tools-ai' ); ?></span>
+                <span id="ai_prompt_spinner" style="display: none; height: 16px; width: 16px; margin-left: 0.5rem;" class="loading-spinner active"></span>
             </button>
         </div>
 
@@ -232,7 +233,7 @@ class Disciple_Tools_AI_Tile
                         'ai_prompt' => [
                             'title' => __( 'AI Filter Prompt', 'disciple-tools-ai' ),
                             'prompt_placeholder' => __( 'Describe list to show...', 'disciple-tools-ai' ),
-                            'submit_but' => __( 'Submit', 'disciple-tools-ai' ),
+                            'search' => __( 'Search', 'disciple-tools-ai' ),
                             'close_but' => __( 'Close', 'disciple-tools-ai' )
                         ],
                         'multiple_options' => [
@@ -350,17 +351,25 @@ class Disciple_Tools_AI_Tile
                                 <button id="ai-clear-button" style="display: none;" class="ai-clear-button mdi mdi-close" onclick="clear_ai_filter();"></button>
                             </div>
                             <br>
-                            <button class="button" aria-label="submit" type="button" id="ai_prompt_submit">
-                                <span aria-hidden="true">${window.lodash.escape(settings.translations.ai_prompt.submit_but)}</span>
-                            </button>
-                            <button class="button" data-close aria-label="submit" type="button">
-                                <span aria-hidden="true">${window.lodash.escape(settings.translations.ai_prompt.close_but)}</span>
-                            </button>
+                            <div style="display: flex; justify-content: space-between;">
+                                <button class="button" data-close aria-label="submit" type="button" style="background-color: #f2f2f2; color: #000;">
+                                    <span aria-hidden="true">${window.lodash.escape(settings.translations.ai_prompt.close_but)}</span>
+                                </button>
+                                <button class="button" aria-label="submit" type="button" id="ai_prompt_submit">
+                                    <span aria-hidden="true">${window.lodash.escape(settings.translations.ai_prompt.search)}</span>
+                                </button>
+                            </div>
                         `;
                         $(modal).find('#modal-large-content').html(html);
+                        
 
                         // Add event listeners to modal.
                         $(document).off('open.zf.reveal', '[data-reveal]'); // Remove existing modal open listeners
+                        //auto focus on the search field
+                        $(document).on('open.zf.reveal', '[data-reveal]', function (evt) {
+                            document.getElementById('ai-search').focus();
+                        });
+
                         $(document).on('open.zf.reveal', '[data-reveal]', function (evt) {
                             document.getElementById('ai-search').addEventListener('keyup', function(e) {
                                 e.preventDefault();
