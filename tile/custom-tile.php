@@ -16,6 +16,7 @@ class Disciple_Tools_AI_Tile
         add_filter( 'dt_custom_fields_settings', [ $this, 'dt_custom_fields' ], 1, 2 );
         add_action( 'dt_details_additional_section', [ $this, 'dt_add_section' ], 30, 2 );
         add_action( 'archive_template_action_bar_buttons', [ $this, 'archive_template_action_bar_buttons' ], 5, 1 );
+        add_action( 'archive_template_mobile_action_bar_buttons', [ $this, 'archive_template_mobile_action_bar_buttons' ], 5, 1 );
     }
 
     public function dt_site_scripts(): void {
@@ -162,6 +163,14 @@ class Disciple_Tools_AI_Tile
     }
 
     public function archive_template_action_bar_buttons( $post_type ): void {
+        $this->display_archive_template_action_bar_buttons( $post_type );
+    }
+
+    public function archive_template_mobile_action_bar_buttons( $post_type ): void {
+        $this->display_archive_template_action_bar_buttons( $post_type, true );
+    }
+
+    public function display_archive_template_action_bar_buttons( $post_type, $is_mobile = false ): void {
         if ( Disciple_Tools_AI_API::has_module_value( Disciple_Tools_AI_API::$module_default_id_dt_ai_list_filter, 'enabled', 0 ) ) {
             return;
         }
@@ -219,7 +228,7 @@ class Disciple_Tools_AI_Tile
         <div id="ai-search-filter">
             <button id="ai_prompt_button" class="button no-margin icon-button" style="padding: 0.1rem 0.75rem;min-height: 100%;" onclick="show_ai_prompt_modal();">
                 <i id="ai_prompt_icon" class="mdi mdi-large mdi-star-four-points-outline" style="font-size: large;"></i>
-                <span style="margin-left: 0.5rem;"><?php esc_html_e( 'Search or Filter', 'disciple-tools-ai' ); ?></span>
+                <span style="<?php echo ( !$is_mobile ? esc_attr('margin-left: 0.5rem;') : '') ?>"><?php esc_html_e( ( !$is_mobile ? 'Search or Filter' : ''), 'disciple-tools-ai' ); ?></span>
                 <span id="ai_prompt_spinner" style="display: none; height: 16px; width: 16px; margin-left: 0.5rem;" class="loading-spinner active"></span>
             </button>
         </div>
@@ -365,7 +374,7 @@ class Disciple_Tools_AI_Tile
                             </div>
                         `;
                         $(modal).find('#modal-large-content').html(html);
-                        
+
 
                         // Add event listeners to modal.
                         $(document).off('open.zf.reveal', '[data-reveal]'); // Remove existing modal open listeners
@@ -392,7 +401,7 @@ class Disciple_Tools_AI_Tile
                         $(document).on('closed.zf.reveal', '[data-reveal]', function (evt) {
                             console.log('closed', evt);
                             // Remove click event listener, to avoid a build-up of event listeners.
-                            $(document).off('click', '#ai_prompt_submit');    
+                            $(document).off('click', '#ai_prompt_submit');
                             $('#ai_prompt_submit').off('click');
                         });
 
