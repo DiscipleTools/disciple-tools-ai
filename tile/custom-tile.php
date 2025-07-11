@@ -228,7 +228,13 @@ class Disciple_Tools_AI_Tile
         <div id="ai-search-filter">
             <button id="ai_prompt_button" class="button no-margin icon-button" style="padding: 0.1rem 0.75rem;min-height: 100%;" onclick="show_ai_prompt_modal();">
                 <i id="ai_prompt_icon" class="mdi mdi-large mdi-star-four-points-outline" style="font-size: large;"></i>
-                <span style="<?php echo ( !$is_mobile ? esc_attr('margin-left: 0.5rem;') : '') ?>"><?php esc_html_e( ( !$is_mobile ? 'Search or Filter' : ''), 'disciple-tools-ai' ); ?></span>
+                <span style="<?php echo ( !$is_mobile ? esc_attr( 'margin-left: 0.5rem;' ) : '' ) ?>">
+                    <?php 
+                    if ( !$is_mobile ) {
+                        esc_html_e( 'Search or Filter', 'disciple-tools-ai' );
+                    }
+                    ?>
+                </span>
                 <span id="ai_prompt_spinner" style="display: none; height: 16px; width: 16px; margin-left: 0.5rem;" class="loading-spinner active"></span>
             </button>
         </div>
