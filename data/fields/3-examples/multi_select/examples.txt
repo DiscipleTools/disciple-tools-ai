@@ -12,3 +12,7 @@ Show contacts who can share the Gospel and their testimony, but are not. ==//== 
 Show records with a baptized milestone. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "milestones", "field_value": "milestone_baptized", "intent": "EQUALS" }]}
 Show records with a Baptizing milestone. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "milestones", "field_value": "milestone_baptizing", "intent": "EQUALS" }]}
 Show contacts in a church group or starting a church. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "milestones", "field_value": ["milestone_in_group", "milestone_planting"], "intent": "EQUALS" }]}
+
+Churches engaged in Bible study ==//== {"post_types": ["groups"], "fields": [{"field_key": "health_metrics", "field_value": "church_bible", "intent": "EQUALS" }]}
+Churches giving ==//== {"post_types": ["groups"], "fields": [{"field_key": "health_metrics", "field_value": "church_giving", "intent": "EQUALS" }]}
+Church groups sharing the Gospel ==//== {"post_types": ["groups"], "fields": [{"field_key": "health_metrics", "field_value": "church_sharing", "intent": "EQUALS" }]}

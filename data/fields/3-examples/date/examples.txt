@@ -73,3 +73,4 @@ Created this year ==//== {"post_types": ["contacts"], "fields": [{"field_key": "
 Baptised this month ==//== {"post_types": ["contacts"], "fields": [{"field_key": "baptism_date", "field_value": "this month", "intent": "DATES_THIS_MONTH" }]}
 Created this week ==//== {"post_types": ["contacts"], "fields": [{"field_key": "post_date", "field_value": "this week", "intent": "DATES_THIS_WEEK" }]}
 
+Churches started last year. ==//== {"post_types": ["groups"], "fields": [{"field_key": "church_start_date", "field_value": "last year", "intent": "DATES_PREVIOUS_YEARS" }]}

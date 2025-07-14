@@ -89,3 +89,6 @@ Display closed contacts which were martyred. ==//== {"post_types": ["contacts"],
 Show closed contacts which have moved. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "reason_closed", "field_value": "moved", "intent": "EQUALS" }]}
 Show closed contacts resulting from a gdpr request. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "reason_closed", "field_value": "gdpr", "intent": "EQUALS" }]}
 Display records closed for unknown reasons. ==//== {"post_types": ["contacts"], "fields": [{"field_key": "reason_closed", "field_value": "unknown", "intent": "EQUALS" }]}
+
+Churches ==//== {"post_types": ["groups"], "fields": [{"field_key": "group_status", "field_value": "active", "intent": ["EQUALS"] }]}
+active churches ==//== {"post_types": ["groups"], "fields": [{"field_key": "group_status", "field_value": "active", "intent": ["EQUALS"] }]}
