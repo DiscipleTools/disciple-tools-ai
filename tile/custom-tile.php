@@ -234,6 +234,7 @@ class Disciple_Tools_AI_Tile
                     'nonce' => wp_create_nonce( 'wp_rest' ),
                     'translations' => [
                         'custom_filter' => __( 'Custom AI Filter', 'disciple-tools-ai' ),
+                        'text_search_prefix' => __( 'Search', 'disciple-tools-ai' ),
                         'ai_prompt' => [
                             'title' => __( 'AI Filter Prompt', 'disciple-tools-ai' ),
                             'prompt_placeholder' => __( 'Describe list to show...', 'disciple-tools-ai' ),
@@ -731,7 +732,9 @@ class Disciple_Tools_AI_Tile
                          */
 
                         let labels = [];
-                        if (Array.isArray(inferred_fields) && window.SHAREDFUNCTIONS?.create_name_value_label) {
+                        if (text_search) {
+                            labels.push({ id: 'text_search', name: `${settings.translations.text_search_prefix}: ${text_search}`, field: 'name' });
+                        } else if (Array.isArray(inferred_fields) && window.SHAREDFUNCTIONS?.create_name_value_label) {
                             inferred_fields.forEach((field) => {
                                 if (field?.field_key && field?.field_value) {
                                     const {field_key, field_value} = field;
