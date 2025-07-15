@@ -234,6 +234,7 @@ class Disciple_Tools_AI_Tile
                     'nonce' => wp_create_nonce( 'wp_rest' ),
                     'translations' => [
                         'custom_filter' => __( 'Custom AI Filter', 'disciple-tools-ai' ),
+                        'text_search_prefix' => __( 'Search', 'disciple-tools-ai' ),
                         'ai_prompt' => [
                             'title' => __( 'AI Filter Prompt', 'disciple-tools-ai' ),
                             'prompt_placeholder' => __( 'Describe list to show...', 'disciple-tools-ai' ),
@@ -317,7 +318,7 @@ class Disciple_Tools_AI_Tile
                                     document.getElementById('ai_prompt_icon').style.display = 'inline-block';
 
                                 } else if ((response?.status === 'multiple_options_detected') && (response?.multiple_options)) {
-                                    window.show_multiple_options_modal(response.multiple_options, response?.pii, response?.fields);
+                                    window.show_multiple_options_modal(response.multiple_options, response?.pii, response?.inferred);
 
                                 } else if ((response?.status === 'success') && (response?.filter)) {
 
@@ -365,7 +366,7 @@ class Disciple_Tools_AI_Tile
                             </div>
                         `;
                         $(modal).find('#modal-large-content').html(html);
-                        
+
 
                         // Add event listeners to modal.
                         $(document).off('open.zf.reveal', '[data-reveal]'); // Remove existing modal open listeners
@@ -392,7 +393,7 @@ class Disciple_Tools_AI_Tile
                         $(document).on('closed.zf.reveal', '[data-reveal]', function (evt) {
                             console.log('closed', evt);
                             // Remove click event listener, to avoid a build-up of event listeners.
-                            $(document).off('click', '#ai_prompt_submit');    
+                            $(document).off('click', '#ai_prompt_submit');
                             $('#ai_prompt_submit').off('click');
                         });
 
@@ -416,7 +417,7 @@ class Disciple_Tools_AI_Tile
                     $(modal).foundation('close');
                 }
 
-                window.show_multiple_options_modal = (multiple_options, pii, filter_fields) => {
+                window.show_multiple_options_modal = (multiple_options, pii, inferred) => {
                     const modal = $('#modal-small');
                     if (modal) {
 
@@ -571,7 +572,7 @@ class Disciple_Tools_AI_Tile
                             <button class="button" data-close aria-label="submit" type="button">
                                 <span aria-hidden="true">${window.lodash.escape(settings.translations.multiple_options.close_but)}</span>
                             </button>
-                            <input id="multiple_options_filtered_fields" type="hidden" value="${encodeURIComponent( JSON.stringify(filter_fields) )}" />
+                            <input id="multiple_options_inferred" type="hidden" value="${encodeURIComponent( JSON.stringify(inferred) )}" />
                             <input id="multiple_options_pii" type="hidden" value="${encodeURIComponent( JSON.stringify(pii) )}" />
                         `;
 
@@ -601,7 +602,7 @@ class Disciple_Tools_AI_Tile
                         "prompt": document.getElementById('ai-search').value,
                         "post_type": settings.post_type,
                         "selections": window.package_multiple_options_selections(),
-                        "filtered_fields": JSON.parse( decodeURIComponent( document.getElementById('multiple_options_filtered_fields').value ) ),
+                        "inferred": JSON.parse( decodeURIComponent( document.getElementById('multiple_options_inferred').value ) ),
                         "pii": JSON.parse( decodeURIComponent( document.getElementById('multiple_options_pii').value ) )
                     };
 
@@ -731,7 +732,9 @@ class Disciple_Tools_AI_Tile
                          */
 
                         let labels = [];
-                        if (Array.isArray(inferred_fields) && window.SHAREDFUNCTIONS?.create_name_value_label) {
+                        if (text_search) {
+                            labels.push({ id: 'text_search', name: `${settings.translations.text_search_prefix}: ${text_search}`, field: 'name' });
+                        } else if (Array.isArray(inferred_fields) && window.SHAREDFUNCTIONS?.create_name_value_label) {
                             inferred_fields.forEach((field) => {
                                 if (field?.field_key && field?.field_value) {
                                     const {field_key, field_value} = field;

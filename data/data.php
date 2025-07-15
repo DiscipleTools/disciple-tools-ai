@@ -40,7 +40,7 @@ class Disciple_Tools_AI_Data {
      * Disciple_Tools_AI_Data constructor.
      */
     public function __construct() {
-        add_filter( 'dt_ai_field_specs', [ $this, 'dt_ai_field_specs' ], 10, 2 );
+        add_filter( 'dt_ai_field_specs', [ $this, 'dt_ai_field_specs' ], 10, 3 );
     }
 
     private function get_data( $path, $escape = true ): array {
@@ -117,18 +117,41 @@ class Disciple_Tools_AI_Data {
         return $specs;
     }
 
-    public function dt_ai_field_specs( $field_specs, $post_type ): array {
+    public function dt_ai_field_specs( $field_specs, $post_type, $args = [] ): array {
+
+        /**
+         * Determine if all post types are to be captured, or just the specified
+         * post type.
+         */
+
+        $all_post_types = isset( $args['all_post_types'] ) && $args['all_post_types'];
+        if ( $all_post_types ) {
+            $post_types = DT_Posts::get_post_types();
+        } else {
+            $post_types = [ $post_type ];
+        }
+
+        /**
+         * List all post types within brief.
+         */
+
+        $brief = [ 'The following record types / post types are allowed:' ];
+        $brief = array_merge( $brief, $post_types );
 
         /**
          * Fetch list of fields associated with given post type and list
          * keys.
          */
 
-        $brief = [ 'The following field_keys are allowed:' ];
-        foreach ( DT_Posts::get_post_settings( $post_type )['fields'] ?? [] as $key => $field ) {
-            if ( in_array( $field['type'], [ 'boolean', 'communication_channel', 'connection', 'date', 'key_select', 'location', 'location_meta', 'multi_select', 'tags', 'text', 'user_select' ] ) ) {
-                if ( !isset( $field['private'] ) || !$field['private'] ) {
-                    $brief[] = $key;
+        $processed_fields = [];
+        $brief[] = 'The following field_keys are allowed:';
+        foreach ( $post_types as $looped_post_type ) {
+            foreach ( DT_Posts::get_post_settings( $looped_post_type )['fields'] ?? [] as $key => $field ) {
+                if ( !in_array( $key, $processed_fields ) && in_array( $field['type'], [ 'boolean', 'communication_channel', 'connection', 'date', 'key_select', 'location', 'location_meta', 'multi_select', 'tags', 'text', 'user_select' ] ) ) {
+                    if ( !isset( $field['private'] ) || !$field['private'] ) {
+                        $brief[] = $key;
+                        $processed_fields[] = $key;
+                    }
                 }
             }
         }
