@@ -70,8 +70,8 @@ class Disciple_Tools_AI_Dynamic_Maps extends DT_Metrics_Chart_Base
                 'translations' => [
                     'placeholder' => __( 'Query the map: "Active contacts", "Baptized Contacts", ', 'disciple-tools-ai' ),
                     'default_error_msg' => __( 'Process terminated, due to errors!', 'disciple-tools-ai' ),
-                    'no_results_msg' => __( 'No results found!', 'disciple-tools-ai' ),
                     'details_title' => __( 'Maps', 'disciple-tools-ai' ),
+                    'records_found' => __( 'Records Found', 'disciple-tools-ai' ),
                     'multiple_options' => [
                         'title' => __( 'Multiple Options Detected', 'disciple-tools-ai' ),
                         'locations' => __( 'Locations', 'disciple-tools-ai' ),

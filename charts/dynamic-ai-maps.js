@@ -54,7 +54,7 @@
               /* ===== Search & Filter ===== */
               #search-filter {
                   --header-height: 0rem;
-                  --search-margin-block: 1rem;
+                  --search-margin-block: 0.25rem;
                   --search-border-width: 2px;
                   --search-input-height: 2.5rem;
                   --search-height: calc(
@@ -121,6 +121,10 @@
                   height: var(--search-input-height);
               }
 
+              #records-found {
+                margin-bottom: 0.5rem;
+              }
+
               .filters .container {
                   padding: 1rem;
               }
@@ -158,6 +162,9 @@
                       <i id="filter_icon" class="mdi mdi-star-four-points-outline"></i>
                       <span id="filter_spinner" style="display: inline-block" class="loading-spinner active"></span>
                     </button>
+                </div>
+                <div id="records-found" style="display: none;">
+                  ${window.lodash.escape(window.dt_mapbox_metrics.translations.records_found)}: <span id="records-found-count">0</span>
                 </div>
               </div>
               <div id="geocode-details" class="geocode-details">
@@ -289,21 +296,25 @@
 
           document.getElementById('filter_spinner').style.display = 'none';
           document.getElementById('filter_icon').style.display = 'inline-block';
+          document.getElementById('records-found-count').innerHTML = '0';
+          document.getElementById('records-found').style.display = 'inline-block';
 
         } else if ((data?.status === 'multiple_options_detected') && (data?.multiple_options)) {
           window.show_multiple_options_modal(data.multiple_options, data?.pii, data?.inferred);
 
         } else if ((data?.status === 'success') && (data?.points?.features?.length === 0)) {
-          alert( (data?.message) ? data.message : `${window.lodash.escape(window.dt_mapbox_metrics.translations.no_results_msg)}` );
-
           document.getElementById('filter_spinner').style.display = 'none';
           document.getElementById('filter_icon').style.display = 'inline-block';
+          document.getElementById('records-found-count').innerHTML = '0';
+          document.getElementById('records-found').style.display = 'inline-block';
 
         } else if ((data?.status === 'success') && (data?.points)) {
           window.load_points(data.points);
 
           document.getElementById('filter_spinner').style.display = 'none';
           document.getElementById('filter_icon').style.display = 'inline-block';
+          document.getElementById('records-found-count').innerHTML = data?.points?.features?.length;
+          document.getElementById('records-found').style.display = 'inline-block';
         }
       })
       .fail(function (err) {
@@ -312,6 +323,8 @@
 
         document.getElementById('filter_spinner').style.display = 'none';
         document.getElementById('filter_icon').style.display = 'inline-block';
+        document.getElementById('records-found-count').innerHTML = '0';
+        document.getElementById('records-found').style.display = 'inline-block';
       });
     }
 
@@ -527,19 +540,22 @@
 
         // If successful, load points or relevant alert.
         if ((data?.status === 'success') && (data?.points?.features?.length === 0)) {
-          alert( (data?.message) ? data.message : `${window.lodash.escape(window.dt_mapbox_metrics.translations.no_results_msg)}` );
+          document.getElementById('records-found-count').innerHTML = '0';
 
         } else if ((data?.status === 'success') && (data?.points)) {
+          document.getElementById('records-found-count').innerHTML = data?.points?.features?.length;
           window.load_points(data.points);
 
         } else if (data?.status === 'error') {
+          document.getElementById('records-found-count').innerHTML = '0';
           alert( (data?.message) ? data.message : `${window.lodash.escape(window.dt_mapbox_metrics.translations.default_error_msg)}` );
 
         }
 
-        // Stop spinning....
+        // Stop spinning and display records found count.
         document.getElementById('filter_spinner').style.display = 'none';
         document.getElementById('filter_icon').style.display = 'inline-block';
+        document.getElementById('records-found').style.display = 'inline-block';
 
       })
       .fail(function (err) {
@@ -548,6 +564,8 @@
 
         document.getElementById('filter_spinner').style.display = 'none';
         document.getElementById('filter_icon').style.display = 'inline-block';
+        document.getElementById('records-found-count').innerHTML = '0';
+        document.getElementById('records-found').style.display = 'inline-block';
       });
     }
 
