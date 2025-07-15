@@ -1,10 +1,10 @@
-Show all new contacts assigned to me ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_NEW"] }]
-Show me all archived contacts ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_CLOSED"] }]
-Show all active contacts not assigned to me ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["NOT_EQUALS", "STATUS_ACTIVE"] }]
+Show all new contacts assigned to me ==//== {"post_types": ["contacts"], "fields": [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_NEW"] }]}
+Show me all archived contacts ==//== {"post_types": ["contacts"], "fields": [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS", "STATUS_CLOSED"] }]}
+Show all active contacts not assigned to me ==//== {"post_types": ["contacts"], "fields": [{"field_key": "assigned_to", "field_value": "me", "intent": ["NOT_EQUALS", "STATUS_ACTIVE"] }]}
 
-contacts ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS"] }]
-groups ==//== [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS"] }]
+contacts ==//== {"post_types": ["contacts"], "fields": [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS"] }]}
+groups ==//== {"post_types": ["contacts"], "fields": [{"field_key": "assigned_to", "field_value": "me", "intent": ["EQUALS"] }]}
 
-show contacts assigned to 378617eJ63885ae3n ==//== [{"field_key": "assigned_to", "field_value": "378617eJ63885ae3n", "intent": ["EQUALS"] }]
-show contacts assigned to Jane ==//== [{"field_key": "assigned_to", "field_value": "Jane", "intent": ["EQUALS"] }]
+show contacts assigned to 378617eJ63885ae3n ==//== {"post_types": ["contacts"], "fields": [{"field_key": "assigned_to", "field_value": "378617eJ63885ae3n", "intent": ["EQUALS"] }]}
+show contacts assigned to Jane ==//== {"post_types": ["contacts"], "fields": [{"field_key": "assigned_to", "field_value": "Jane", "intent": ["EQUALS"] }]}
 
