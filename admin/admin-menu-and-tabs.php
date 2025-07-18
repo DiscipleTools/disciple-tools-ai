@@ -148,6 +148,7 @@ class Disciple_Tools_AI_Tab_General {
         ?>
         <form method="post">
             <?php wp_nonce_field( 'dt_admin_form', 'dt_admin_form_nonce' ) ?>
+
             <table class="widefat striped">
                 <thead>
                 <tr>
@@ -156,6 +157,19 @@ class Disciple_Tools_AI_Tab_General {
                 </tr>
                 </thead>
                 <tbody>
+                    <tr>
+                        <td colspan="2">
+                            <p>
+                                Turn AI on for superpowers.
+                                <br>
+                                For this you will need to get an API key from your favorite AI provider. 
+                                <br>
+                                Please use an AI model that you trust. Contact data and personal information may be shared with these models. 
+                                <br>
+                                Consider contacting <a href="https://predictionguard.com" target="_blank">predictionguard.com</a> to get a model that is safe to use.
+                            </p>
+                        </td>
+                    </tr>
                 <tr>
                     <td>
                         Your LLM Endpoint
@@ -205,6 +219,8 @@ class Disciple_Tools_AI_Tab_General {
                         <tr>
                             <td>
                                 <?php echo esc_attr( $module['name'] ) ?>
+                                <br>
+                                <small><?php echo esc_attr( $module['description'] ) ?></small>
                             </td>
                             <td>
                                 <input type="checkbox" name="<?php echo esc_attr( $module['id'] ) ?>" <?php echo ( ( isset( $module['enabled'] ) && $module['enabled'] ) ? 'checked' : '' ) ?>>
