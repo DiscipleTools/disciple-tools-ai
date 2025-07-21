@@ -10,15 +10,15 @@ class Disciple_Tools_AI_Endpoints
     public function add_api_routes() {
         $namespace = 'disciple-tools-ai/v1';
 
-        register_rest_route(
-            $namespace, '/dt-ai-summarize', [
-                'methods'  => 'POST',
-                'callback' => [ $this, 'summarize' ],
-                'permission_callback' => function( WP_REST_Request $request ) {
-                    return $this->has_permission();
-                },
-            ]
-        );
+//        register_rest_route(
+//            $namespace, '/dt-ai-summarize', [
+//                'methods'  => 'POST',
+//                'callback' => [ $this, 'summarize' ],
+//                'permission_callback' => function( WP_REST_Request $request ) {
+//                    return $this->has_permission();
+//                },
+//            ]
+//        );
 
         register_rest_route(
             $namespace, '/dt-ai-create-filter', [

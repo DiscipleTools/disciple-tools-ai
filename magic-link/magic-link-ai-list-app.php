@@ -198,7 +198,6 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
         <style>
             body {
                 background-color: white;
-                padding: 1em;
             }
         </style>
         <?php
