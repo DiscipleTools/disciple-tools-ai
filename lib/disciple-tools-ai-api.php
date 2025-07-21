@@ -120,7 +120,7 @@ class Disciple_Tools_AI_API {
         $ambiguous = [ 'locations' => [], 'users' => [], 'posts' => [] ];
 
         // Loop through locations, users, and posts.
-        foreach ([ 'locations', 'users', 'posts' ] as $type ) {
+        foreach ( [ 'locations', 'users', 'posts' ] as $type ) {
             $var = 'multiple_' . $type;
 
             // Loop through each entry in the multiple_* array.
@@ -165,7 +165,7 @@ class Disciple_Tools_AI_API {
             }
 
             // Unset the field variable.
-            unset($field);
+            unset( $field );
 
             // Update inferred fields for state preservation.
             $inferred['fields'] = $fields;
