@@ -670,7 +670,7 @@ class Disciple_Tools_AI_API {
 
             // Ensure user field types are correct for user connections.
             if ( isset( $user['type'] ) && in_array( $user['type'], [ 'user_select' ] ) ) {
-                $hits = Disciple_Tools_Users::get_assignable_users_compact( ( !$search_all ? ( $pii_mappings[$user['value']] ?? $user['value'] ) : null ), true, $post_type );
+                $hits = self::list_users( ( !$search_all ? ( $pii_mappings[$user['value']] ?? $user['value'] ) : null ) );
                 $parsed_users[] = [
                     'prompt' => $pii_mappings[$user['value']] ?? $user['value'],
                     'pii_prompt' => $user['value'],
@@ -685,6 +685,22 @@ class Disciple_Tools_AI_API {
         }
 
         return $parsed_users;
+    }
+
+    private static function list_users( $search_string = null ): array {
+        global $wpdb;
+
+        $users = [];
+
+        $sql = !empty( $search_string ) ? $wpdb->prepare( "SELECT ID, display_name FROM $wpdb->users WHERE display_name LIKE %s", '%' . $search_string .'%' ) : "SELECT ID, display_name FROM $wpdb->users";
+        foreach ( $wpdb->get_results( $sql ) ?? [] as $result ) {
+            $users[] = [
+                'ID' => $result->ID,
+                'name' => $result->display_name
+            ];
+        }
+
+        return $users;
     }
 
     public static function parse_connections_for_post_names( $names, $post_type, $pii_mappings = [] ): array {
