@@ -1,298 +1,197 @@
-# Copyright (C) 2022 
-# This file is distributed under the same license as the Disciple.Tools - Plugin Starter Template plugin.
+# Copyright (C) 2025 
+# This file is distributed under the same license as the Disciple.Tools - AI plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Disciple.Tools - Plugin Starter Template 0.1\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/disciple-tools-plugin-starter-template\n"
+"Project-Id-Version: Disciple.Tools - AI 0.1\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/disciple-tools-ai\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2022-10-27T10:12:56+00:00\n"
+"POT-Creation-Date: 2025-07-21T11:24:10+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.7.1\n"
-"X-Domain: disciple-tools-plugin-starter-template\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: disciple-tools-ai\n"
 
-#: charts/one-page-chart-template.php:68
-msgid "Sample API Call"
+#. Plugin Name of the plugin
+#: disciple-tools-ai.php
+msgid "Disciple.Tools - AI"
 msgstr ""
 
-#: magic-link/magic-link-map.php:99
-#: magic-link/magic-link-non-object.php:117
-#: magic-link/magic-link-user-app.php:167
-#: magic-link/post-type-magic-link/magic-link-post-type.php:102
-msgid "Add Magic"
+#. Plugin URI of the plugin
+#: disciple-tools-ai.php
+msgid "https://github.com/DiscipleTools/disciple-tools-ai"
 msgstr ""
 
-#: magic-link/post-type-magic-link/magic-link-post-type.php:128
-msgid "Magic Url"
+#. Description of the plugin
+#: disciple-tools-ai.php
+msgid "Disciple.Tools - AI is a plugin that adds AI capabilities to Disciple.Tools"
 msgstr ""
 
-#: post-type/loader.php:22
-#: post-type/module-base.php:63
-#: post-type/module-base.php:79
-msgid "Starter"
+#: charts/dynamic-ai-maps.php:62
+msgctxt "install mapbox key to view map"
+msgid "To view this map, a mapbox key is needed; click here to add."
 msgstr ""
 
-#: post-type/loader.php:27
-msgid "Default starter functionality"
+#: charts/dynamic-ai-maps.php:71
+msgid "Query the map: \"Active contacts\", \"Baptized Contacts\", "
 msgstr ""
 
-#: post-type/module-base.php:64
-#: post-type/module-base.php:80
-msgid "Starters"
+#: charts/dynamic-ai-maps.php:72
+msgid "Process terminated, due to errors!"
 msgstr ""
 
-#: post-type/module-base.php:95
-msgid "Multiplier"
+#: charts/dynamic-ai-maps.php:73
+msgid "Maps"
 msgstr ""
 
-#: post-type/module-base.php:137
-msgid "Status"
+#: charts/dynamic-ai-maps.php:74
+msgid "Records Found"
 msgstr ""
 
-#: post-type/module-base.php:138
-msgid "Set the current status."
+#: charts/dynamic-ai-maps.php:76
+#: magic-link/magic-link-ai-list-app.php:112
+#: tile/custom-tile.php:262
+msgid "Multiple Options Detected"
 msgstr ""
 
-#: post-type/module-base.php:142
-msgid "Inactive"
-msgstr ""
-
-#: post-type/module-base.php:143
-msgid "No longer active."
-msgstr ""
-
-#: post-type/module-base.php:147
-msgid "Active"
-msgstr ""
-
-#: post-type/module-base.php:148
-msgid "Is active."
-msgstr ""
-
-#: post-type/module-base.php:158
-msgid "Assigned To"
-msgstr ""
-
-#: post-type/module-base.php:159
-msgid "Select the main person who is responsible for reporting on this record."
-msgstr ""
-
-#: post-type/module-base.php:173
-msgid "Start Date"
-msgstr ""
-
-#: post-type/module-base.php:181
-msgid "End Date"
-msgstr ""
-
-#: post-type/module-base.php:189
-msgid "Multi-Select"
-msgstr ""
-
-#: post-type/module-base.php:190
-msgid "Multi Select Field"
-msgstr ""
-
-#: post-type/module-base.php:194
-msgid "Item 1"
-msgstr ""
-
-#: post-type/module-base.php:195
-msgid "Item 1."
-msgstr ""
-
-#: post-type/module-base.php:198
-msgid "Item 2"
-msgstr ""
-
-#: post-type/module-base.php:199
-msgid "Item 2."
-msgstr ""
-
-#: post-type/module-base.php:202
-msgid "Item 3"
-msgstr ""
-
-#: post-type/module-base.php:203
-msgid "Item 3."
-msgstr ""
-
-#: post-type/module-base.php:217
-#: post-type/module-base.php:226
+#: charts/dynamic-ai-maps.php:77
+#: magic-link/magic-link-ai-list-app.php:113
+#: tile/custom-tile.php:263
 msgid "Locations"
 msgstr ""
 
-#: post-type/module-base.php:218
-msgid "The general location where this contact is located."
+#: charts/dynamic-ai-maps.php:78
+#: magic-link/magic-link-ai-list-app.php:114
+#: tile/custom-tile.php:264
+msgid "Users"
 msgstr ""
 
-#: post-type/module-base.php:227
-msgid "The general location where this record is located."
+#: charts/dynamic-ai-maps.php:79
+#: magic-link/magic-link-ai-list-app.php:115
+#: tile/custom-tile.php:265
+msgid "Posts"
 msgstr ""
 
-#: post-type/module-base.php:235
-msgid "Address"
+#: charts/dynamic-ai-maps.php:80
+#: magic-link/magic-link-ai-list-app.php:116
+#: tile/custom-tile.php:266
+msgid "-- Ignore --"
 msgstr ""
 
-#: post-type/module-base.php:258
-msgid "Parents"
+#: charts/dynamic-ai-maps.php:81
+#: magic-link/magic-link-ai-list-app.php:117
+#: tile/custom-tile.php:267
+msgid "Submit"
 msgstr ""
 
-#: post-type/module-base.php:269
-msgid "Peers"
+#: charts/dynamic-ai-maps.php:82
+#: magic-link/magic-link-ai-list-app.php:118
+#: magic-link/magic-link-ai-list-app.php:360
+#: tile/custom-tile.php:259
+#: tile/custom-tile.php:268
+msgid "Close"
 msgstr ""
 
-#: post-type/module-base.php:280
-msgid "Children"
+#: lib/disciple-tools-ai-api.php:362
+#: lib/disciple-tools-ai-api.php:369
+#: lib/disciple-tools-ai-api.php:376
+#: lib/disciple-tools-ai-api.php:383
+#, php-format
+msgctxt "Unable to process prompt"
+msgid "Unable to process prompt: %s"
 msgstr ""
 
-#: post-type/module-base.php:297
-msgid "People Groups"
+#: magic-link/ai-chat-control/ai-chat.php:105
+msgid "Type a command like 'I met with John and we talked about his baptism'..."
 msgstr ""
 
-#: post-type/module-base.php:298
-msgid "The people groups connected to this record."
+#: magic-link/ai-chat-control/ai-chat.php:106
+msgid "Send"
 msgstr ""
 
-#: post-type/module-base.php:308
-msgid "Contacts"
+#: magic-link/ai-chat-control/ai-chat.php:107
+msgid "Welcome to AI Chat Control. You can type commands like \"I met with John and we talked about his baptism\" to update contact records and add meeting notes."
 msgstr ""
 
-#: post-type/module-base.php:365
-msgid "Connections"
+#: magic-link/magic-link-ai-list-app.php:236
+msgid "Item Saved"
 msgstr ""
 
-#: post-type/module-base.php:366
-msgid "Other"
+#: magic-link/magic-link-ai-list-app.php:264
+msgid "Describe the list to show..."
 msgstr ""
 
-#: post-type/module-base.php:383
-msgid "Custom Section Contact"
+#: magic-link/magic-link-ai-list-app.php:295
+msgid "Submit Update"
 msgstr ""
 
-#: post-type/module-base.php:539
-msgid "Assigned to me"
+#: magic-link/magic-link-ai-list-app.php:341
+msgctxt "input field placeholder"
+msgid "Write your comment or note here"
 msgstr ""
 
-#: post-type/module-base.php:547
-#: post-type/module-base.php:604
-#: post-type/module-base.php:612
-msgid "All"
+#: magic-link/magic-link-ai-list-app.php:346
+msgid "Submit comment"
 msgstr ""
 
-#: tile/custom-tile.php:32
-msgid "Plugin Starter Template"
+#: magic-link/magic-link-login-user-app.php:176
+#: magic-link/magic-link-map.php:99
+#: magic-link/magic-link-non-object.php:117
+#: magic-link/magic-link-user-app.php:170
+#: magic-link/post-type-magic-link/magic-link-post-type.php:105
+msgid "Add Magic"
 msgstr ""
 
-#: tile/custom-tile.php:33
-msgid "A Beautiful Tile"
+#: magic-link/post-type-magic-link/magic-link-post-type.php:131
+msgid "Magic Url"
 msgstr ""
 
-#: tile/custom-tile.php:63
-#: tile/custom-tile.php:132
-#: tile/custom-tile.php:138
-msgid "Text"
+#: rest-api/rest-api.php:39
+msgid "Unauthorized: Unable to summarize!"
 msgstr ""
 
-#: tile/custom-tile.php:64
-msgctxt "Optional Documentation"
-msgid "Text"
-msgstr ""
-
-#: tile/custom-tile.php:74
-msgid "Multiselect"
-msgstr ""
-
-#: tile/custom-tile.php:76
-msgid "One"
-msgstr ""
-
-#: tile/custom-tile.php:77
-msgid "Two"
-msgstr ""
-
-#: tile/custom-tile.php:78
-msgid "Three"
-msgstr ""
-
-#: tile/custom-tile.php:79
-msgid "Four"
-msgstr ""
-
-#: tile/custom-tile.php:95
-msgctxt "Key Select Label"
-msgid "First"
-msgstr ""
-
-#: tile/custom-tile.php:96
-msgctxt "Training Status field description"
-msgid "First Key Description"
-msgstr ""
-
-#: tile/custom-tile.php:100
-msgctxt "Key Select Label"
-msgid "Second"
-msgstr ""
-
-#: tile/custom-tile.php:101
-msgctxt "Training Status field description"
-msgid "Second Key Description"
-msgstr ""
-
-#: tile/custom-tile.php:105
-msgctxt "Key Select Label"
-msgid "Third"
-msgstr ""
-
-#: tile/custom-tile.php:106
-msgctxt "Training Status field description"
-msgid "Third Key Description"
-msgstr ""
-
-#: tile/custom-tile.php:117
-msgid "Number field"
-msgstr ""
-
-#: tile/custom-tile.php:124
-msgid "Number field private"
-msgstr ""
-
-#: tile/custom-tile.php:145
-msgid "Communication Channel"
-msgstr ""
-
-#: tile/custom-tile.php:152
-msgid "User Select"
+#: tile/custom-tile.php:37
+msgid "Disciple Tools AI"
 msgstr ""
 
 #: tile/custom-tile.php:157
-msgid "Array"
+msgid "Summarize This Contact"
 msgstr ""
 
-#: tile/custom-tile.php:167
-#: tile/custom-tile.php:174
-msgid " Date Field"
+#: tile/custom-tile.php:235
+msgid "Search or Filter"
 msgstr ""
 
-#: tile/custom-tile.php:182
-#: tile/custom-tile.php:187
-msgid "Boolean"
+#: tile/custom-tile.php:253
+msgid "Custom AI Filter"
 msgstr ""
 
-#: tile/settings-tile.php:43
-#: tile/settings-tile.php:61
+#: tile/custom-tile.php:254
+#: tile/custom-tile.php:258
+msgid "Search"
+msgstr ""
+
+#: tile/custom-tile.php:256
+msgid "AI Search"
+msgstr ""
+
+#: tile/custom-tile.php:257
+msgid "Describe list to show..."
+msgstr ""
+
+#: tile/profile-settings-tile.php:43
+#: tile/profile-settings-tile.php:61
 msgid "Custom Settings Section"
 msgstr ""
 
-#: tile/settings-tile.php:77
+#: tile/profile-settings-tile.php:77
 msgctxt "Optional Documentation"
 msgid "Custom Settings Section"
 msgstr ""
 
-#: tile/settings-tile.php:78
+#: tile/profile-settings-tile.php:78
 msgctxt "Optional Documentation"
 msgid "Add your own help information into this modal."
 msgstr ""

@@ -98,18 +98,13 @@ class Disciple_Tools_AI {
         }
 
 
-//        require_once( 'site-link/custom-site-to-site-links.php' ); // add site to site link class and capabilities
-
         if ( strpos( dt_get_url_path(), 'metrics' ) !== false || $is_rest ){
             require_once( 'charts/charts-loader.php' );  // add custom charts to the metrics area
         }
 
         require_once( 'tile/custom-tile.php' ); // add custom tile
-//        if ( 'settings' === dt_get_url_path() && ! $is_rest ) {
-//            require_once( 'tile/profile-settings-tile.php' ); // add custom settings page tile
-//        }
 
-        require_once( 'magic-link/ai-chat-control/ai-chat.php' );
+        // require_once( 'magic-link/ai-chat-control/ai-chat.php' );
         require_once( 'magic-link/magic-link-ai-list-app.php' );
 
         if ( is_admin() ) {
@@ -121,8 +116,6 @@ class Disciple_Tools_AI {
         if ( is_admin() ) { // adds links to the plugin description area in the plugin admin list.
             add_filter( 'plugin_row_meta', [ $this, 'plugin_description_links' ], 10, 4 );
         }
-
-//        require_once( 'workflows/workflows.php' );
 
         /**
          * Build required datasets.

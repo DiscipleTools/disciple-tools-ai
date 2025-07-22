@@ -127,6 +127,68 @@ class Disciple_Tools_AI_API {
         }
 
         /**
+         * Auto-select single-option ambiguities for locations, users, and posts.
+         * Only keep entries with >1 option in the multiple_* arrays.
+         * Update $fields and $inferred['fields'] accordingly.
+         */
+
+        // Auto-select single-option ambiguities for locations, users, and posts.
+        $auto_selected = [ 'locations' => [], 'users' => [], 'posts' => [] ];
+        $ambiguous = [ 'locations' => [], 'users' => [], 'posts' => [] ];
+
+        // Loop through locations, users, and posts.
+        foreach ( [ 'locations', 'users', 'posts' ] as $type ) {
+            $var = 'multiple_' . $type;
+
+            // Loop through each entry in the multiple_* array.
+            foreach ( $$var as $entry ) {
+
+                // If the entry has only one option, add it to the auto_selected array.
+                if ( count( $entry['options'] ) === 1 ) {
+                    $auto_selected[$type][] = [
+                        'prompt' => $entry['prompt'],
+                        'id' => $entry['options'][0]['id'],
+                        'label' => $entry['options'][0]['label'],
+                    ];
+
+                // If the entry has more than one option, add it to the ambiguous array.
+                } elseif ( count( $entry['options'] ) > 1 ) {
+                    $ambiguous[$type][] = $entry;
+                }
+            }
+
+            // Replace the original array with only ambiguous entries
+            ${$var} = $ambiguous[$type];
+        }
+
+        // Apply auto-selected values to $fields
+        if ( !empty( $auto_selected['locations'] ) || !empty( $auto_selected['users'] ) || !empty( $auto_selected['posts'] ) ) {
+
+            // For each auto-selected, update the corresponding field in $fields
+            foreach ( $fields as &$field ) {
+
+                // Loop through locations, users, and posts.
+                foreach ( [ 'locations', 'users', 'posts' ] as $type ) {
+
+                    // Loop through each auto-selected entry.
+                    foreach ( $auto_selected[$type] as $selected ) {
+
+                        // If the field value matches the auto-selected prompt, update the field value to the auto-selected id.
+                        if ( isset( $field['field_value'] ) && $field['field_value'] === $selected['prompt'] ) {
+                            $field['field_value'] = $selected['id'];
+                        }
+                    }
+                }
+            }
+
+            // Unset the field variable.
+            unset( $field );
+
+            // Update inferred fields for state preservation.
+            $inferred['fields'] = $fields;
+        }
+
+        /**
          * Determine if flow is to be paused, due to multiple options.
          */
 
@@ -1647,39 +1709,62 @@ class Disciple_Tools_AI_API {
     public static function list_modules( $defaults = [
         'dt_ai_list_filter' => [
             'id' => 'dt_ai_list_filter',
-            'name' => 'List Filter Enabled',
+            'name' => 'List Search and Filter',
+            'description' => 'Enable AI search and filter for lists.',
             'visible' => true,
             'enabled' => 1
         ],
         'dt_ai_ml_list_filter' => [
             'id' => 'dt_ai_ml_list_filter',
-            'name' => 'Magic Link List Filter Enabled',
+            'name' => 'List User App (Magic Link)',
+            'description' => 'A new user app with AI search and filter integrated. ',
             'visible' => true,
             'enabled' => 1
         ],
         'dt_ai_metrics_dynamic_maps' => [
             'id' => 'dt_ai_metrics_dynamic_maps',
-            'name' => 'Metrics Dynamic Maps Enabled',
+            'name' => 'Metrics Dynamic Maps',
+            'description' => 'A new AI maps in the metrics section.',
             'visible' => true,
             'enabled' => 1
         ]
     ] ): array {
         $ai_modules = apply_filters( 'dt_ai_modules', $defaults );
-        $module_options = get_option( 'dt_ai_modules', [] );
+        $module_enabled_states = get_option( 'dt_ai_modules', [] );
 
         // Remove modules not present.
-        foreach ( $module_options as $key => $module ) {
+        foreach ( $module_enabled_states as $key => $enabled_state ) {
             if ( !isset( $ai_modules[$key] ) ) {
-                unset( $module_options[$key] );
+                unset( $module_enabled_states[$key] );
             }
         }
 
-        // Merge distinct.
-        return dt_array_merge_recursive_distinct( $ai_modules, $module_options );
+        // Merge enabled states with defaults.
+        foreach ( $ai_modules as $module_id => $module ) {
+            if ( isset( $module_enabled_states[$module_id] ) ) {
+                $ai_modules[$module_id]['enabled'] = $module_enabled_states[$module_id];
+            }
+        }
+
+        return $ai_modules;
     }
 
     public static function update_modules( $updated_modules ): bool {
-        return update_option( 'dt_ai_modules', $updated_modules );
+        // Extract only the enabled states from the updated modules
+        $enabled_states = [];
+        foreach ( $updated_modules as $module_id => $module ) {
+            if ( isset( $module['enabled'] ) ) {
+                $enabled_states[$module_id] = $module['enabled'];
+            }
+        }
+
+        return update_option( 'dt_ai_modules', $enabled_states );
+    }
+
+    public static function update_module_enabled_state( $module_id, $enabled_state ): bool {
+        $current_enabled_states = get_option( 'dt_ai_modules', [] );
+        $current_enabled_states[$module_id] = $enabled_state;
+        return update_option( 'dt_ai_modules', $current_enabled_states );
     }
 
     public static function has_module_value( $module_id, $module_property, $module_value ): bool {

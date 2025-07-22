@@ -253,7 +253,7 @@ class Disciple_Tools_AI_Tile
                         'custom_filter' => __( 'Custom AI Filter', 'disciple-tools-ai' ),
                         'text_search_prefix' => __( 'Search', 'disciple-tools-ai' ),
                         'ai_prompt' => [
-                            'title' => __( 'AI Filter Prompt', 'disciple-tools-ai' ),
+                            'title' => __( 'AI Search', 'disciple-tools-ai' ),
                             'prompt_placeholder' => __( 'Describe list to show...', 'disciple-tools-ai' ),
                             'search' => __( 'Search', 'disciple-tools-ai' ),
                             'close_but' => __( 'Close', 'disciple-tools-ai' )
@@ -375,6 +375,15 @@ class Disciple_Tools_AI_Tile
                                 <button id="ai-clear-button" style="display: none;" class="ai-clear-button mdi mdi-close" onclick="clear_ai_filter();"></button>
                             </div>
                             <br>
+                            <p>
+                               Examples:
+                               <ul>
+                                <li>Contacts in Spain</li>
+                                <li>Active contacts</li>
+                                <li>Assigned to John</li>
+                                <li>Groups created this year</li>
+                               </ul>
+                            </p>
                             <div style="display: flex; justify-content: space-between;">
                                 <button class="button" data-close aria-label="submit" type="button" style="background-color: #f2f2f2; color: #000;">
                                     <span aria-hidden="true">${window.lodash.escape(settings.translations.ai_prompt.close_but)}</span>
