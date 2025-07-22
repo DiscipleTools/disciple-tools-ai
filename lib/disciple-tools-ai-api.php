@@ -692,7 +692,13 @@ class Disciple_Tools_AI_API {
 
         $users = [];
 
-        $sql = !empty( $search_string ) ? $wpdb->prepare( "SELECT ID, display_name FROM $wpdb->users WHERE display_name LIKE %s", '%' . $search_string .'%' ) : "SELECT ID, display_name FROM $wpdb->users";
+        $sql = "SELECT ID, display_name FROM $wpdb->users";
+        if ( !empty( $search_string ) ) {
+            $sql = $wpdb->prepare(
+                "SELECT ID, display_name FROM $wpdb->users WHERE display_name LIKE %s",
+                '%' . $search_string . '%'
+            );
+        }
         foreach ( $wpdb->get_results( $sql ) ?? [] as $result ) {
             $users[] = [
                 'ID' => $result->ID,
