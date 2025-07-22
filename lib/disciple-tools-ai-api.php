@@ -110,6 +110,68 @@ class Disciple_Tools_AI_API {
         }
 
         /**
+         * Auto-select single-option ambiguities for locations, users, and posts.
+         * Only keep entries with >1 option in the multiple_* arrays.
+         * Update $fields and $inferred['fields'] accordingly.
+         */
+
+        // Auto-select single-option ambiguities for locations, users, and posts.
+        $auto_selected = [ 'locations' => [], 'users' => [], 'posts' => [] ];
+        $ambiguous = [ 'locations' => [], 'users' => [], 'posts' => [] ];
+
+        // Loop through locations, users, and posts.
+        foreach ( [ 'locations', 'users', 'posts' ] as $type ) {
+            $var = 'multiple_' . $type;
+
+            // Loop through each entry in the multiple_* array.
+            foreach ( $$var as $entry ) {
+
+                // If the entry has only one option, add it to the auto_selected array.
+                if ( count( $entry['options'] ) === 1 ) {
+                    $auto_selected[$type][] = [
+                        'prompt' => $entry['prompt'],
+                        'id' => $entry['options'][0]['id'],
+                        'label' => $entry['options'][0]['label'],
+                    ];
+
+                // If the entry has more than one option, add it to the ambiguous array.
+                } elseif ( count( $entry['options'] ) > 1 ) {
+                    $ambiguous[$type][] = $entry;
+                }
+            }
+
+            // Replace the original array with only ambiguous entries
+            ${$var} = $ambiguous[$type];
+        }
+
+        // Apply auto-selected values to $fields
+        if ( !empty( $auto_selected['locations'] ) || !empty( $auto_selected['users'] ) || !empty( $auto_selected['posts'] ) ) {
+
+            // For each auto-selected, update the corresponding field in $fields
+            foreach ( $fields as &$field ) {
+
+                // Loop through locations, users, and posts.
+                foreach ( [ 'locations', 'users', 'posts' ] as $type ) {
+
+                    // Loop through each auto-selected entry.
+                    foreach ( $auto_selected[$type] as $selected ) {
+
+                        // If the field value matches the auto-selected prompt, update the field value to the auto-selected id.
+                        if ( isset( $field['field_value'] ) && $field['field_value'] === $selected['prompt'] ) {
+                            $field['field_value'] = $selected['id'];
+                        }
+                    }
+                }
+            }
+
+            // Unset the field variable.
+            unset( $field );
+
+            // Update inferred fields for state preservation.
+            $inferred['fields'] = $fields;
+        }
+
+        /**
          * Determine if flow is to be paused, due to multiple options.
          */
 
@@ -1678,7 +1740,7 @@ class Disciple_Tools_AI_API {
                 $enabled_states[$module_id] = $module['enabled'];
             }
         }
-        
+
         return update_option( 'dt_ai_modules', $enabled_states );
     }
 
