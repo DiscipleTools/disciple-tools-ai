@@ -16,16 +16,7 @@ class Disciple_Tools_AI_API {
          */
 
         $original_prompt = $prompt;
-        //$pii = self::parse_prompt_for_pii( $post_type, $prompt );
-        $pii = [
-            'prompt' => [
-                'original' => $prompt,
-                'obfuscated' => $prompt,
-            ],
-            'pii' => [],
-            'mappings' => []
-        ];
-
+        $pii = self::parse_prompt_for_pii( $post_type, $prompt );
         $has_pii = ( !empty( $pii['pii'] ) && !empty( $pii['mappings'] ) && isset( $pii['prompt']['obfuscated'] ) );
         if ( $has_pii ) {
             $prompt = $pii['prompt']['obfuscated'];
@@ -457,8 +448,8 @@ class Disciple_Tools_AI_API {
 
         $pii = array_unique(
             array_merge(
-                self::parse_prompt_for_pii_names( $post_type, $prompt ),
-                self::parse_prompt_for_pii_locations( $prompt ),
+                //self::parse_prompt_for_pii_names( $post_type, $prompt ),
+                //self::parse_prompt_for_pii_locations( $prompt ),
                 self::parse_prompt_for_pii_emails( $prompt ),
                 self::parse_prompt_for_pii_phone_numbers( $prompt )
             )
@@ -1382,8 +1373,8 @@ class Disciple_Tools_AI_API {
                 // Capture text based global searches....
                 if ( isset( $settings['fields'][ $field_key ]['type'] ) && in_array( $settings['fields'][ $field_key ]['type'], [ 'text', 'communication_channel' ] ) ) {
 
-                    // ...will always capture the latest value, overwriting previous entries.
-                    $text_search = $field_value;
+                    // ...will always capture the latest value, overwriting previous entries and map obfuscated values back to original prompts.
+                    $text_search = $pii_mappings[ $field_value ] ?? $field_value;
                 }
             }
         }
