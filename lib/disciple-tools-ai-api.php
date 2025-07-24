@@ -670,7 +670,8 @@ class Disciple_Tools_AI_API {
 
             // Ensure user field types are correct for user connections.
             if ( isset( $user['type'] ) && in_array( $user['type'], [ 'user_select' ] ) ) {
-                $hits = Disciple_Tools_Users::get_assignable_users_compact( ( !$search_all ? ( $pii_mappings[$user['value']] ?? $user['value'] ) : null ) );
+                $search = $pii_mappings[$user['value']] ?? $user['value'];
+                $hits = Disciple_Tools_Users::get_assignable_users_compact( $search_all ? null : $search );
                 $parsed_users[] = [
                     'prompt' => $pii_mappings[$user['value']] ?? $user['value'],
                     'pii_prompt' => $user['value'],
