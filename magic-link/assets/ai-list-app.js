@@ -231,12 +231,14 @@ function show_multiple_options_modal(multiple_options, pii, inferred) {
         <br>
         ${posts_html}
         <br>
-        <button class="button" aria-label="submit" type="button" id="multiple_options_submit">
-            <span aria-hidden="true">${window.lodash.escape(window.dt_ai_obj.translations.multiple_options.submit_but)}</span>
-        </button>
-        <button class="button" data-close aria-label="submit" type="button">
-            <span aria-hidden="true">${window.lodash.escape(window.dt_ai_obj.translations.multiple_options.close_but)}</span>
-        </button>
+        <div style="display: flex; justify-content: space-between;">
+          <button class="button" data-close aria-label="submit" type="button" style="background-color: #f2f2f2; color: #000;">
+              <span aria-hidden="true">${window.lodash.escape(window.dt_ai_obj.translations.multiple_options.close_but)}</span>
+          </button>
+          <button class="button" aria-label="submit" type="button" id="multiple_options_submit">
+              <span aria-hidden="true">${window.lodash.escape(window.dt_ai_obj.translations.multiple_options.submit_but)}</span>
+          </button>
+        </div>
         <input id="multiple_options_inferred" type="hidden" value="${encodeURIComponent( JSON.stringify(inferred) )}" />
         <input id="multiple_options_pii" type="hidden" value="${encodeURIComponent( JSON.stringify(pii) )}" />
     `;

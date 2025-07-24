@@ -107,6 +107,23 @@ class Disciple_Tools_AI_API {
             $multiple_posts = array_filter( $posts, function( $post ) {
                 return count( $post['options'] ) > 0;
             } );
+
+            /**
+             * Defaults: If no hits found, for specified user_select fields,
+             * then display all available users.
+             */
+
+            if ( count( array_merge( $multiple_users, $multiple_posts ) ) == 0 ) {
+                $filtered_connections = array_filter( $connections['connections'], function( $connection ) {
+                    return isset( $connection['type'] ) && in_array( $connection['type'], [ 'user_select' ] );
+                });
+
+                if ( count( $filtered_connections ) > 0 ) {
+                    $multiple_users = array_filter( self::parse_connections_for_users( $filtered_connections, $post_type, $pii['mappings'] ?? [], true ), function( $user ) {
+                        return count( $user['options'] ) > 0;
+                    } );
+                }
+            }
         }
 
         /**
@@ -641,7 +658,7 @@ class Disciple_Tools_AI_API {
         return $parsed_locations;
     }
 
-    public static function parse_connections_for_users( $users, $post_type, $pii_mappings = [] ): array {
+    public static function parse_connections_for_users( $users, $post_type, $pii_mappings = [], $search_all = false ): array {
         if ( empty( $users ) ) {
             return [];
         }
@@ -653,7 +670,8 @@ class Disciple_Tools_AI_API {
 
             // Ensure user field types are correct for user connections.
             if ( isset( $user['type'] ) && in_array( $user['type'], [ 'user_select' ] ) ) {
-                $hits = Disciple_Tools_Users::get_assignable_users_compact( $pii_mappings[$user['value']] ?? $user['value'], true, $post_type );
+                $search = $pii_mappings[$user['value']] ?? $user['value'];
+                $hits = Disciple_Tools_Users::get_assignable_users_compact( $search_all ? null : $search );
                 $parsed_users[] = [
                     'prompt' => $pii_mappings[$user['value']] ?? $user['value'],
                     'pii_prompt' => $user['value'],
