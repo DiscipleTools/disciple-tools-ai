@@ -49,6 +49,11 @@ class Disciple_Tools_AI_Tile
             return;
         }
 
+        // Check if AI summarization module is enabled
+        if ( Disciple_Tools_AI_API::has_module_value( Disciple_Tools_AI_API::$module_default_id_dt_ai_summarization, 'enabled', 0 ) ) {
+            return;
+        }
+
         $ai_summary = isset( $dt_post['ai_summary'] ) ? $dt_post['ai_summary'] : '';
         ?>
         <style>

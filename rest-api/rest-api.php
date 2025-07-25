@@ -34,6 +34,11 @@ class Disciple_Tools_AI_Endpoints
     }
 
     public function summarize( WP_REST_Request $request ) {
+        // Check if AI summarization module is enabled
+        if ( Disciple_Tools_AI_API::has_module_value( Disciple_Tools_AI_API::$module_default_id_dt_ai_summarization, 'enabled', 0 ) ) {
+            return new WP_Error( 'module_disabled', 'AI Summarization module is not enabled', [ 'status' => 403 ] );
+        }
+
         $post_type = $request->get_param( 'post_type' ) ?? '';
         $post_id = $request->get_param( 'post_id' ) ?? '';
 
