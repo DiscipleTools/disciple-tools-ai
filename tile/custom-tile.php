@@ -28,14 +28,11 @@ class Disciple_Tools_AI_Tile
      * @return array
      */
     public function dt_custom_fields( array $fields, string $post_type = '' ) {
-        if ( in_array( $post_type, [ 'contacts', 'ai' ] ) ) {
-            $fields['ai_summary'] = [
-                'name' => __( 'AI Summary', 'disciple-tools-ai' ),
-                'type' => 'textarea',
-                'hidden' => true, // Hide from normal field display since we show it in custom section
-            ];
-        }
-
+        $fields['ai_summary'] = [
+            'name' => __( 'AI Summary', 'disciple-tools-ai' ),
+            'type' => 'textarea',
+            //'hidden' => true, // Hide from normal field display since we show it in custom section
+        ];
         return $fields;
     }
 
@@ -45,9 +42,6 @@ class Disciple_Tools_AI_Tile
      * @param array $dt_post
      */
     public function dt_record_top_above_details( $post_type, $dt_post ) {
-        if ( !in_array( $post_type, [ 'contacts', 'ai' ] ) ) {
-            return;
-        }
 
         // Check if AI summarization module is enabled
         if ( Disciple_Tools_AI_API::has_module_value( Disciple_Tools_AI_API::$module_default_id_dt_ai_summarization, 'enabled', 0 ) ) {
@@ -153,7 +147,7 @@ class Disciple_Tools_AI_Tile
                 font-style: normal;
             }
         </style>
-        
+
         <section class="cell small-12 ai-summary-inline">
             <div class="ai-summary-row">
                 <div class="ai-summary-icon"></div>
