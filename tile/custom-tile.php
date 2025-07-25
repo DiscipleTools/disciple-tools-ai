@@ -12,9 +12,8 @@ class Disciple_Tools_AI_Tile
     } // End instance()
 
     public function __construct(){
-        add_filter( 'dt_details_additional_tiles', [ $this, 'dt_details_additional_tiles' ], 10, 2 );
         add_filter( 'dt_custom_fields_settings', [ $this, 'dt_custom_fields' ], 100, 2 );
-        add_action( 'dt_details_additional_section', [ $this, 'dt_add_section' ], 100, 2 );
+        add_action( 'dt_record_top_above_details', [ $this, 'dt_record_top_above_details' ], 10, 2 );
         add_action( 'archive_template_action_bar_buttons', [ $this, 'archive_template_action_bar_buttons' ], 5, 1 );
         add_action( 'archive_template_mobile_action_bar_buttons', [ $this, 'archive_template_mobile_action_bar_buttons' ], 5, 1 );
     }
@@ -23,19 +22,7 @@ class Disciple_Tools_AI_Tile
     }
 
     /**
-     * This function registers a new tile to a specific post type
-     * @param $tiles
-     * @param string $post_type
-     * @return mixed
-     */
-    public function dt_details_additional_tiles( $tiles, $post_type = '' ) {
-        if ( in_array( $post_type, [ 'contacts', 'ai' ] ) ){
-            $tiles['disciple_tools_ai'] = [ 'label' => __( 'Disciple Tools AI', 'disciple-tools-ai' ) ];
-        }
-        return $tiles;
-    }
-
-    /**
+     * Register the ai_summary custom field
      * @param array $fields
      * @param string $post_type
      * @return array
@@ -45,72 +32,189 @@ class Disciple_Tools_AI_Tile
             $fields['ai_summary'] = [
                 'name' => __( 'AI Summary', 'disciple-tools-ai' ),
                 'type' => 'textarea',
-                'tile' => 'disciple_tools_ai',
+                'hidden' => true, // Hide from normal field display since we show it in custom section
             ];
         }
 
         return $fields;
     }
 
-    public function dt_add_section( $section, $post_type ) {
-        if ( in_array( $post_type, [ 'contacts', 'ai' ] ) && $section === 'disciple_tools_ai' ){
-            ?>
-            <script>
-                document.addEventListener('DOMContentLoaded', function(){
-                    document.getElementById('dt-ai-summary-button').addEventListener('click', function(){
-                        this.classList.add('loading');
-                        const post_type = window.commentsSettings?.post?.post_type;
-                        const post_id = window.commentsSettings?.post?.ID;
-                        prepareDataForLLM( post_type, post_id );
-                    });
-                });
+    /**
+     * Render AI summary section at the top of contact pages
+     * @param string $post_type
+     * @param array $dt_post
+     */
+    public function dt_record_top_above_details( $post_type, $dt_post ) {
+        if ( !in_array( $post_type, [ 'contacts', 'ai' ] ) ) {
+            return;
+        }
 
-                function prepareDataForLLM(post_type, post_id) {
-
-                    fetch(`${wpApiShare.root}disciple-tools-ai/v1/dt-ai-summarize`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-WP-Nonce': window.wpApiShare.nonce // Include the nonce in the headers
-                        },
-                        body: JSON.stringify({
-                            post_type,
-                            post_id
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-
-                        document.querySelector('#dt-ai-summary-button').classList.remove('loading');
-
-                        // Determine action to take based on endpoint response.
-                        if ( data?.data?.status === 401 && data?.message ) {
-                            document.querySelector('#dt-ai-summary').innerText = data?.message;
-                            $('.grid').masonry('layout');
-
-                        } else if ( data?.updated ) {
-                            window.location.reload();
-
-                        } else {
-                            document.querySelector('#dt-ai-summary').innerText = data?.summary;
-                            $('.grid').masonry('layout');
-                        }
-
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
-                }
-            </script>
-            <div class="cell small-12 medium-4">
-                <div class="dt-tile">
-                    <div class="dt-tile-content">
-                        <button id="dt-ai-summary-button" class="button loader" style="min-width: 100%;"><?php esc_html_e( 'Summarize This Contact', 'disciple-tools-ai' ) ?></button>
-                        <p id="dt-ai-summary"></p>
+        $ai_summary = isset( $dt_post['ai_summary'] ) ? $dt_post['ai_summary'] : '';
+        ?>
+        <style>
+            .ai-summary-inline {
+                border-left: 3px solid #007cba;
+                background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+                padding: 12px 16px;
+                margin-bottom: 12px;
+                position: relative;
+                overflow: hidden;
+            }
+            .ai-summary-inline::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 40px;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(0, 124, 186, 0.05));
+                pointer-events: none;
+            }
+            .ai-summary-row {
+                display: flex;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .ai-summary-icon {
+                flex-shrink: 0;
+                width: 20px;
+                height: 20px;
+                background: #007cba;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-top: 2px;
+            }
+            .ai-summary-icon::after {
+                content: '✨';
+                font-size: 10px;
+                color: white;
+            }
+            .ai-summary-main {
+                flex-grow: 1;
+                min-width: 0;
+            }
+            .ai-summary-header-inline {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 6px;
+            }
+            .ai-summary-label {
+                font-size: 12px;
+                font-weight: 600;
+                color: #007cba;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin: 0;
+            }
+            .ai-summary-button-inline {
+                font-size: 11px;
+                padding: 3px 8px;
+                min-height: auto;
+                line-height: 1.2;
+                border-radius: 12px;
+                background: #007cba;
+                color: white;
+                border: none;
+                transition: all 0.2s ease;
+            }
+            .ai-summary-button-inline:hover {
+                background: #005a87;
+                transform: translateY(-1px);
+            }
+            button.loader:not(.disabled).loading {
+                padding-right: 22px !important;
+            }
+            .ai-summary-button-inline.loading::before {
+                width: 12px !important;
+                height: 12px !important;
+                margin: -6px !important;
+            }
+            .ai-summary-text {
+                color: #495057;
+                line-height: 1.5;
+                font-size: 14px;
+                margin: 0;
+                font-style: italic;
+            }
+            .ai-summary-text:empty::before {
+                content: "Generate an AI summary to see key insights about this contact...";
+                color: #9ca3af;
+                font-style: italic;
+            }
+            .ai-summary-text:not(:empty) {
+                font-style: normal;
+            }
+        </style>
+        
+        <section class="cell small-12 ai-summary-inline">
+            <div class="ai-summary-row">
+                <div class="ai-summary-icon"></div>
+                <div class="ai-summary-main">
+                    <div class="ai-summary-header-inline">
+                        <span class="ai-summary-label"><?php esc_html_e( 'AI Insights', 'disciple-tools-ai' ); ?></span>
+                        <button id="dt-ai-summary-button" class="ai-summary-button-inline loader">
+                            <?php esc_html_e( 'Generate', 'disciple-tools-ai' ); ?>
+                        </button>
                     </div>
+                    <p id="dt-ai-summary" class="ai-summary-text"><?php echo esc_html( $ai_summary ); ?></p>
+                </div>
             </div>
+        </section>
 
-        <?php }
+        <script>
+            document.addEventListener('DOMContentLoaded', function(){
+                document.getElementById('dt-ai-summary-button').addEventListener('click', function(){
+                    this.classList.add('loading');
+                    this.textContent = '<?php esc_html_e( 'Working...', 'disciple-tools-ai' ); ?>';
+                    const post_type = window.commentsSettings?.post?.post_type;
+                    const post_id = window.commentsSettings?.post?.ID;
+                    prepareDataForLLM( post_type, post_id );
+                });
+            });
+
+            function prepareDataForLLM(post_type, post_id) {
+                fetch(`${wpApiShare.root}disciple-tools-ai/v1/dt-ai-summarize`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': window.wpApiShare.nonce // Include the nonce in the headers
+                    },
+                    body: JSON.stringify({
+                        post_type,
+                        post_id
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const button = document.querySelector('#dt-ai-summary-button');
+                    button.classList.remove('loading');
+                    button.textContent = '<?php esc_html_e( 'Refresh', 'disciple-tools-ai' ); ?>';
+
+                    // Determine action to take based on endpoint response.
+                    if ( data?.data?.status === 401 && data?.message ) {
+                        document.querySelector('#dt-ai-summary').innerText = data?.message;
+
+                    } else if ( data?.updated ) {
+                        window.location.reload();
+
+                    } else {
+                        document.querySelector('#dt-ai-summary').innerText = data?.summary;
+                    }
+
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const button = document.querySelector('#dt-ai-summary-button');
+                    button.classList.remove('loading');
+                    button.textContent = '<?php esc_html_e( 'Generate', 'disciple-tools-ai' ); ?>';
+                    document.querySelector('#dt-ai-summary').innerText = 'Error generating summary. Please try again.';
+                });
+            }
+        </script>
+        <?php
     }
 
     public function archive_template_action_bar_buttons( $post_type ): void {
