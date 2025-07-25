@@ -8,6 +8,7 @@ class Disciple_Tools_AI_API {
     public static $module_default_id_dt_ai_list_filter = 'dt_ai_list_filter';
     public static $module_default_id_dt_ai_ml_list_filter = 'dt_ai_ml_list_filter';
     public static $module_default_id_dt_ai_metrics_dynamic_maps = 'dt_ai_metrics_dynamic_maps';
+    public static $module_default_id_dt_ai_summarization = 'dt_ai_summarization';
 
     public static function list_posts( string $post_type, string $prompt, $args = [] ): array {
 
@@ -1717,6 +1718,13 @@ class Disciple_Tools_AI_API {
             'id' => 'dt_ai_metrics_dynamic_maps',
             'name' => 'Metrics Dynamic Maps',
             'description' => 'A new AI maps in the metrics section.',
+            'visible' => true,
+            'enabled' => 1
+        ],
+        'dt_ai_summarization' => [
+            'id' => 'dt_ai_summarization',
+            'name' => 'AI Summarization',
+            'description' => 'Generate AI-powered summaries for contacts and records.',
             'visible' => true,
             'enabled' => 1
         ]
