@@ -122,9 +122,6 @@ class Disciple_Tools_AI_Tab_General {
                     </div><!-- end post-body-content -->
                     <div id="postbox-container-1" class="postbox-container">
                         <!-- Right Column -->
-
-                        <?php $this->right_column() ?>
-
                         <!-- End Right Column -->
                     </div><!-- postbox-container 1 -->
                     <div id="postbox-container-2" class="postbox-container">
@@ -142,6 +139,13 @@ class Disciple_Tools_AI_Tab_General {
         $llm_endpoint = get_option( 'DT_AI_llm_endpoint' );
         $llm_api_key = get_option( 'DT_AI_llm_api_key' );
         $llm_model = get_option( 'DT_AI_llm_model' );
+
+        // Empty local site options will default back to multisite network settings.
+        if ( is_multisite() && ( empty( $llm_endpoint ) || empty( $llm_api_key ) || empty( $llm_model ) ) ) {
+            $llm_endpoint = get_site_option( 'DT_AI_llm_endpoint', null );
+            $llm_api_key = get_site_option( 'DT_AI_llm_api_key', null );
+            $llm_model = get_site_option( 'DT_AI_llm_model', null );
+        }
 
         // Fetch default and 3rd-Party AI modules.
         $modules = Disciple_Tools_AI_API::list_modules();
@@ -162,9 +166,9 @@ class Disciple_Tools_AI_Tab_General {
                             <p>
                                 Turn AI on for superpowers.
                                 <br>
-                                For this you will need to get an API key from your favorite AI provider. 
+                                For this you will need to get an API key from your favorite AI provider.
                                 <br>
-                                Please use an AI model that you trust. Contact data and personal information may be shared with these models. 
+                                Please use an AI model that you trust. Contact data and personal information may be shared with these models.
                                 <br>
                                 Consider contacting <a href="https://predictionguard.com" target="_blank">predictionguard.com</a> to get a model that is safe to use.
                             </p>
@@ -275,28 +279,6 @@ class Disciple_Tools_AI_Tab_General {
 
             do_action( 'dt_ai_modules_updated', $updated_modules );
         }
-    }
-
-    public function right_column() {
-        ?>
-        <!-- Box -->
-        <table class="widefat striped">
-            <thead>
-                <tr>
-                    <th>Information</th>
-                </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>
-                    Content
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <br>
-        <!-- End Box -->
-        <?php
     }
 }
 

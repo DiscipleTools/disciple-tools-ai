@@ -344,6 +344,14 @@ class Disciple_Tools_AI_API {
         $llm_endpoint_root = get_option( 'DT_AI_llm_endpoint' );
         $llm_api_key = get_option( 'DT_AI_llm_api_key' );
         $llm_model = get_option( 'DT_AI_llm_model' );
+
+        // Empty local site options will default back to multisite network settings.
+        if ( is_multisite() && ( empty( $llm_endpoint_root ) || empty( $llm_api_key ) || empty( $llm_model ) ) ) {
+            $llm_endpoint_root = get_site_option( 'DT_AI_llm_endpoint', null );
+            $llm_api_key = get_site_option( 'DT_AI_llm_api_key', null );
+            $llm_model = get_site_option( 'DT_AI_llm_model', null );
+        }
+
         $dt_ai_field_specs = apply_filters( 'dt_ai_field_specs', [], $post_type, $args );
         $llm_endpoint = $llm_endpoint_root . '/chat/completions';
 
