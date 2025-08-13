@@ -140,11 +140,30 @@ class Disciple_Tools_AI_Tab_General {
         $llm_api_key = get_option( 'DT_AI_llm_api_key' );
         $llm_model = get_option( 'DT_AI_llm_model' );
 
+        $display_api_key_field = true;
+
         // Empty local site options will default back to multisite network settings.
-        if ( is_multisite() && ( empty( $llm_endpoint ) || empty( $llm_api_key ) || empty( $llm_model ) ) ) {
-            $llm_endpoint = get_site_option( 'DT_AI_llm_endpoint', null );
-            $llm_api_key = get_site_option( 'DT_AI_llm_api_key', null );
-            $llm_model = get_site_option( 'DT_AI_llm_model', null );
+        if ( is_multisite() ) {
+
+            if ( empty( $llm_endpoint ) || empty( $llm_api_key ) || empty( $llm_model ) ) {
+                $llm_endpoint = get_site_option( 'DT_AI_llm_endpoint', null );
+                $llm_api_key = get_site_option( 'DT_AI_llm_api_key', null );
+                $llm_model = get_site_option( 'DT_AI_llm_model', null );
+
+                if ( !empty( $llm_endpoint ) ) {
+                    update_option( 'DT_AI_llm_endpoint', $llm_endpoint );
+                }
+
+                if ( !empty( $llm_api_key ) ) {
+                    update_option( 'DT_AI_llm_api_key', $llm_api_key );
+                }
+
+                if ( !empty( $llm_model ) ) {
+                    update_option( 'DT_AI_llm_model', $llm_model );
+                }
+            }
+
+            $display_api_key_field = empty( $llm_api_key ) || $llm_api_key !== get_site_option( 'DT_AI_llm_api_key', null );
         }
 
         // Fetch default and 3rd-Party AI modules.
@@ -182,6 +201,7 @@ class Disciple_Tools_AI_Tab_General {
                         <input type="text" name="llm-endpoint" placeholder="" value="<?php echo esc_attr( $llm_endpoint ) ?>" style="width: 100%">
                     </td>
                 </tr>
+                <?php if ( $display_api_key_field ) { ?>
                 <tr>
                     <td>
                         Your LLM API Key
@@ -190,6 +210,7 @@ class Disciple_Tools_AI_Tab_General {
                         <input type="password" name="llm-api-key" placeholder="" value="<?php echo esc_attr( $llm_api_key ) ?>" style="width: 100%">
                     </td>
                 </tr>
+                <?php } ?>
                 <tr>
                     <td>
                         Your LLM Model
@@ -255,6 +276,12 @@ class Disciple_Tools_AI_Tab_General {
 
             if ( isset( $post_vars['llm-api-key'] ) ) {
                 update_option( 'DT_AI_llm_api_key', $post_vars['llm-api-key'] );
+
+            } elseif ( is_multisite() ) {
+                $llm_api_key = get_site_option( 'DT_AI_llm_api_key', null );
+                if ( !empty( $llm_api_key ) ) {
+                    update_option( 'DT_AI_llm_api_key', $llm_api_key );
+                }
             }
 
             if ( isset( $post_vars['llm-endpoint'] ) ) {
