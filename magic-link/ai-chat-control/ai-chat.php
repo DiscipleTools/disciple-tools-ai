@@ -251,10 +251,10 @@ class DT_AI_Chat extends DT_Magic_Url_Base{
             return new WP_Error( 'missing_audio', 'No audio file received', [ 'status' => 400 ] );
         }
 
-        $llm_endpoint_root = get_option( 'DT_AI_llm_endpoint' );
-        $llm_api_key = get_option( 'DT_AI_llm_api_key' );
-        $llm_model = get_option( 'DT_AI_llm_model' );
-        $llm_endpoint = $llm_endpoint_root . '/audio/transcriptions';
+        $connection_settings = Disciple_Tools_AI_API::get_ai_connection_settings();
+        $llm_endpoint =$connection_settings['llm_endpoint'];
+        $llm_api_key = $connection_settings['llm_api_key'];
+        $llm_model = $connection_settings['llm_model'];
 
 
         $audio_file = $_FILES['audio']; //phpcs:ignore
@@ -316,9 +316,10 @@ class DT_AI_Chat extends DT_Magic_Url_Base{
         }
 
         // Get AI interpretation of the command
-        $llm_endpoint_root = get_option( 'DT_AI_llm_endpoint' );
-        $llm_api_key = get_option( 'DT_AI_llm_api_key' );
-        $llm_model = get_option( 'DT_AI_llm_model' );
+        $connection_settings = Disciple_Tools_AI_API::get_ai_connection_settings();
+        $llm_endpoint_root =$connection_settings['llm_endpoint'];
+        $llm_api_key = $connection_settings['llm_api_key'];
+        $llm_model = $connection_settings['llm_model'];
         $llm_endpoint = $llm_endpoint_root . '/chat/completions';
 
 
