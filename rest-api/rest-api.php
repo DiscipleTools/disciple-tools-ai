@@ -101,11 +101,10 @@ Output format:
             $prompt .= "- {$comment['comment_author']}: {$comment['comment_content']} ({$comment['comment_date']})\n";
         }
 
-
-
-        $llm_endpoint_root = get_option( 'DT_AI_llm_endpoint' );
-        $llm_api_key = get_option( 'DT_AI_llm_api_key' );
-        $llm_model = get_option( 'DT_AI_llm_model' );
+        $connection_settings = Disciple_Tools_AI_API::get_ai_connection_settings();
+        $llm_endpoint_root =$connection_settings['llm_endpoint'];
+        $llm_api_key = $connection_settings['llm_api_key'];
+        $llm_model = $connection_settings['llm_model'];
 
         $llm_endpoint = $llm_endpoint_root . '/chat/completions';
 

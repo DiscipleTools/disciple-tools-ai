@@ -10,6 +10,32 @@ class Disciple_Tools_AI_API {
     public static $module_default_id_dt_ai_metrics_dynamic_maps = 'dt_ai_metrics_dynamic_maps';
     public static $module_default_id_dt_ai_summarization = 'dt_ai_summarization';
 
+    public static function get_ai_connection_settings(){
+        $llm_endpoint = get_option( 'DT_AI_llm_endpoint' );
+        $llm_api_key = get_option( 'DT_AI_llm_api_key' );
+        $llm_model = get_option( 'DT_AI_llm_model' );
+
+        // Empty local site options will default back to multisite network settings.
+        if ( is_multisite() && ( empty( $llm_endpoint ) || empty( $llm_api_key ) || empty( $llm_model ) ) ){
+            if ( empty( $llm_endpoint ) ){
+                $llm_endpoint = get_site_option( 'DT_AI_llm_endpoint', null );
+            }
+            if ( empty( $llm_api_key ) ){
+                $llm_api_key = get_site_option( 'DT_AI_llm_api_key', null );
+            }
+            if ( empty( $llm_model ) ){
+                $llm_model = get_site_option( 'DT_AI_llm_model', null );
+            }
+        }
+
+        return [
+            'enabled' => !empty( $llm_endpoint ) && !empty( $llm_api_key ) && !empty( $llm_model ),
+            'llm_endpoint' => $llm_endpoint,
+            'llm_api_key' => $llm_api_key,
+            'llm_model' => $llm_model,
+        ];
+    }
+
     public static function list_posts( string $post_type, string $prompt, $args = [] ): array {
 
         /**
@@ -341,16 +367,10 @@ class Disciple_Tools_AI_API {
             return [];
         }
 
-        $llm_endpoint_root = get_option( 'DT_AI_llm_endpoint' );
-        $llm_api_key = get_option( 'DT_AI_llm_api_key' );
-        $llm_model = get_option( 'DT_AI_llm_model' );
-
-        // Empty local site options will default back to multisite network settings.
-        if ( is_multisite() && ( empty( $llm_endpoint_root ) || empty( $llm_api_key ) || empty( $llm_model ) ) ) {
-            $llm_endpoint_root = get_site_option( 'DT_AI_llm_endpoint', null );
-            $llm_api_key = get_site_option( 'DT_AI_llm_api_key', null );
-            $llm_model = get_site_option( 'DT_AI_llm_model', null );
-        }
+        $connection_settings = self::get_ai_connection_settings();
+        $llm_endpoint_root =$connection_settings['llm_endpoint'];
+        $llm_api_key = $connection_settings['llm_api_key'];
+        $llm_model = $connection_settings['llm_model'];
 
         $dt_ai_field_specs = apply_filters( 'dt_ai_field_specs', [], $post_type, $args );
         $llm_endpoint = $llm_endpoint_root . '/chat/completions';

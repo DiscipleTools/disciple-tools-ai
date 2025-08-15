@@ -136,35 +136,7 @@ class Disciple_Tools_AI_Tab_General {
         $token = Disciple_Tools_AI_Menu::instance()->token;
         $this->process_form_fields( $token );
 
-        $llm_endpoint = get_option( 'DT_AI_llm_endpoint' );
-        $llm_api_key = get_option( 'DT_AI_llm_api_key' );
-        $llm_model = get_option( 'DT_AI_llm_model' );
-
-        $display_api_key_field = true;
-
-        // Empty local site options will default back to multisite network settings.
-        if ( is_multisite() ) {
-
-            if ( empty( $llm_endpoint ) || empty( $llm_api_key ) || empty( $llm_model ) ) {
-                $llm_endpoint = get_site_option( 'DT_AI_llm_endpoint', null );
-                $llm_api_key = get_site_option( 'DT_AI_llm_api_key', null );
-                $llm_model = get_site_option( 'DT_AI_llm_model', null );
-
-                if ( !empty( $llm_endpoint ) ) {
-                    update_option( 'DT_AI_llm_endpoint', $llm_endpoint );
-                }
-
-                if ( !empty( $llm_api_key ) ) {
-                    update_option( 'DT_AI_llm_api_key', $llm_api_key );
-                }
-
-                if ( !empty( $llm_model ) ) {
-                    update_option( 'DT_AI_llm_model', $llm_model );
-                }
-            }
-
-            $display_api_key_field = empty( $llm_api_key ) || $llm_api_key !== get_site_option( 'DT_AI_llm_api_key', null );
-        }
+        $connection_settings = Disciple_Tools_AI_API::get_ai_connection_settings();
 
         // Fetch default and 3rd-Party AI modules.
         $modules = Disciple_Tools_AI_API::list_modules();
@@ -198,25 +170,24 @@ class Disciple_Tools_AI_Tab_General {
                         Your LLM Endpoint
                     </td>
                     <td>
-                        <input type="text" name="llm-endpoint" placeholder="" value="<?php echo esc_attr( $llm_endpoint ) ?>" style="width: 100%">
+                        <input type="text" name="llm-endpoint" placeholder="" value="<?php echo esc_attr( $connection_settings['llm_endpoint'] ) ?>" style="width: 100%">
                     </td>
                 </tr>
-                <?php if ( $display_api_key_field ) { ?>
                 <tr>
                     <td>
                         Your LLM API Key
                     </td>
                     <td>
-                        <input type="password" name="llm-api-key" placeholder="" value="<?php echo esc_attr( $llm_api_key ) ?>" style="width: 100%">
+                        <input type="text" name="llm-api-key" placeholder=""
+                               value="<?php echo esc_attr( $connection_settings['llm_api_key'] ? '•••••••' : '' ) ?>" style="width: 100%">
                     </td>
                 </tr>
-                <?php } ?>
                 <tr>
                     <td>
                         Your LLM Model
                     </td>
                     <td>
-                        <input type="text" name="llm-model" placeholder="" value="<?php echo esc_attr( $llm_model ) ?>" style="width: 100%">
+                        <input type="text" name="llm-model" placeholder="" value="<?php echo esc_attr( $connection_settings['llm_model'] ) ?>" style="width: 100%">
                     </td>
                 </tr>
                 <tr>
@@ -274,14 +245,8 @@ class Disciple_Tools_AI_Tab_General {
 
             $post_vars = dt_recursive_sanitize_array( $_POST );
 
-            if ( isset( $post_vars['llm-api-key'] ) ) {
+            if ( isset( $post_vars['llm-api-key'] ) && $post_vars['llm-api-key'] !== '•••••••' ){
                 update_option( 'DT_AI_llm_api_key', $post_vars['llm-api-key'] );
-
-            } elseif ( is_multisite() ) {
-                $llm_api_key = get_site_option( 'DT_AI_llm_api_key', null );
-                if ( !empty( $llm_api_key ) ) {
-                    update_option( 'DT_AI_llm_api_key', $llm_api_key );
-                }
             }
 
             if ( isset( $post_vars['llm-endpoint'] ) ) {
