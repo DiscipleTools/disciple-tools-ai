@@ -92,6 +92,7 @@ class Disciple_Tools_AI {
          * Load useful plugin AI API.
          */
         require_once( 'lib/disciple-tools-ai-api.php' );
+        require_once( 'lib/disciple-tools-ai-filters.php' );
 
         if ( $is_rest && strpos( dt_get_url_path(), 'disciple-tools-ai' ) !== false ) {
             require_once( 'rest-api/rest-api.php' ); // adds starter rest api class
