@@ -1762,7 +1762,7 @@ class Disciple_Tools_AI_API {
             'name' => 'Audio Comment Transcription',
             'description' => 'Transcribe captured audio comments.',
             'visible' => true,
-            'enabled' => 0
+            'enabled' => 1
         ]
     ] ): array {
         $ai_modules = apply_filters( 'dt_ai_modules', $defaults );
@@ -2165,7 +2165,7 @@ class Disciple_Tools_AI_API {
             $post_data = [
                 'model' => $llm_model,
                 'file' => new CURLFile($audio_file['tmp_name'], $audio_file['type'], $audio_file['name']),
-                'language' => 'en',
+                'language' => $audio_file['audio_language'] ?? 'en',
                 'temperature' => '0.1',
                 'timestamps_granularities' => '["segment"]',
                 'diarization' => 'true',
