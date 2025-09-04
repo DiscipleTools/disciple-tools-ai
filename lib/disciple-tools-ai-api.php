@@ -2164,7 +2164,7 @@ class Disciple_Tools_AI_API {
             // Set up the multipart form data
             $post_data = [
                 'model' => $llm_model,
-                'file' => new CURLFile($audio_file['tmp_name'], $audio_file['type'], $audio_file['name']),
+                'file' => new CURLFile( $audio_file['tmp_name'], $audio_file['type'], $audio_file['name'] ),
                 'language' => $audio_file['audio_language'] ?? 'en',
                 'temperature' => '0.1',
                 'timestamps_granularities' => '["segment"]',
@@ -2172,7 +2172,7 @@ class Disciple_Tools_AI_API {
                 'response_format' => 'verbose_json'
             ];
 
-            curl_setopt_array($ch, [
+            curl_setopt_array( $ch, [
                 CURLOPT_URL => $llm_endpoint,
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => $post_data,
@@ -2184,24 +2184,24 @@ class Disciple_Tools_AI_API {
                 CURLOPT_SSL_VERIFYPEER => true,
             ]);
 
-            $transcription_response = curl_exec($ch);
-            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            $curl_error = curl_error($ch);
+            $transcription_response = curl_exec( $ch );
+            $http_code = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
+            $curl_error = curl_error( $ch );
 
-            curl_close($ch);
+            curl_close( $ch );
 
-            if ($curl_error) {
+            if ( $curl_error ) {
                 $response = [
                     'status' => 'error',
                     'message' => sprintf( _x( 'cURL Error: %s', 'cURL Error', 'disciple-tools-ai' ), $curl_error )
                 ];
-            } elseif ($http_code !== 200) {
+            } elseif ( $http_code !== 200 ) {
                 $response = [
                     'status' => 'error',
-                    'message' => sprintf( _x( 'HTTP Error %d: %s', 'HTTP Error', 'disciple-tools-ai' ), $http_code, $transcription_response )
+                    'message' => sprintf( _x( 'HTTP Error %1$d: %2$s', 'HTTP Error', 'disciple-tools-ai' ), $http_code, $transcription_response )
                 ];
             } else {
-                $decoded_response = json_decode($transcription_response, true);
+                $decoded_response = json_decode( $transcription_response, true );
 
                 if ( !empty( $decoded_response['text'] ) ) {
 
