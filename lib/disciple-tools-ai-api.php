@@ -2143,7 +2143,7 @@ class Disciple_Tools_AI_API {
         $connection_settings = self::get_ai_connection_settings();
         $llm_endpoint_root = $connection_settings['llm_endpoint'];
         $llm_api_key = $connection_settings['llm_api_key'];
-        $llm_model = 'base';
+        $llm_model = 'gpt-4o-transcribe';
 
         $llm_endpoint = $llm_endpoint_root . '/audio/transcriptions';
 
@@ -2169,7 +2169,7 @@ class Disciple_Tools_AI_API {
                 'temperature' => '0.1',
                 'timestamps_granularities' => '["segment"]',
                 'diarization' => 'true',
-                'response_format' => 'verbose_json'
+                'response_format' => 'json'
             ];
 
             curl_setopt_array( $ch, [
