@@ -9,6 +9,7 @@ class Disciple_Tools_AI_API {
     public static $module_default_id_dt_ai_ml_list_filter = 'dt_ai_ml_list_filter';
     public static $module_default_id_dt_ai_metrics_dynamic_maps = 'dt_ai_metrics_dynamic_maps';
     public static $module_default_id_dt_ai_summarization = 'dt_ai_summarization';
+    public static $module_default_id_dt_ai_audio_comment_transcription = 'dt_ai_audio_comment_transcription';
 
     public static function get_ai_connection_settings(){
         $llm_endpoint = get_option( 'DT_AI_llm_endpoint' );
@@ -1755,6 +1756,13 @@ class Disciple_Tools_AI_API {
             'description' => 'Generate AI-powered summaries for contacts and records.',
             'visible' => true,
             'enabled' => 1
+        ],
+        'dt_ai_audio_comment_transcription' => [
+            'id' => 'dt_ai_audio_comment_transcription',
+            'name' => 'Audio Comment Transcription',
+            'description' => 'Transcribe captured audio comments.',
+            'visible' => true,
+            'enabled' => 1
         ]
     ] ): array {
         $ai_modules = apply_filters( 'dt_ai_modules', $defaults );
@@ -2121,5 +2129,129 @@ class Disciple_Tools_AI_API {
         }
 
         return false;
+    }
+
+    public static function transcribe_audio_file( $audio_file ): array {
+        if ( !isset( $audio_file['name'], $audio_file['full_path'], $audio_file['type'], $audio_file['tmp_name'], $audio_file['size'] ) ) {
+            return [];
+        }
+
+        /**
+         * Source AI connection settings.
+         */
+
+        $connection_settings = self::get_ai_connection_settings();
+        $llm_endpoint_root = $connection_settings['llm_endpoint'];
+        $llm_api_key = $connection_settings['llm_api_key'];
+        $llm_model = 'base';
+
+        $llm_endpoint = $llm_endpoint_root . '/audio/transcriptions';
+
+        /**
+         * Proceed with transcription execution.
+         */
+
+        $response = [];
+
+        try {
+
+            /**
+             * Use cURL for direct control over multipart request
+             */
+
+            $ch = curl_init();
+
+            // Set up the multipart form data
+            $post_data = [
+                'model' => $llm_model,
+                'file' => new CURLFile( $audio_file['tmp_name'], $audio_file['type'], $audio_file['name'] ),
+                'language' => $audio_file['audio_language'] ?? 'en',
+                'temperature' => '0.1',
+                'timestamps_granularities' => '["segment"]',
+                'diarization' => 'true',
+                'response_format' => 'verbose_json'
+            ];
+
+            curl_setopt_array( $ch, [
+                CURLOPT_URL => $llm_endpoint,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $post_data,
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $llm_api_key,
+                ],
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_SSL_VERIFYPEER => true,
+            ]);
+
+            $transcription_response = curl_exec( $ch );
+            $http_code = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
+            $curl_error = curl_error( $ch );
+
+            curl_close( $ch );
+
+            if ( $curl_error ) {
+                $response = [
+                    'status' => 'error',
+                    'message' => sprintf( _x( 'cURL Error: %s', 'cURL Error', 'disciple-tools-ai' ), $curl_error )
+                ];
+            } elseif ( $http_code !== 200 ) {
+                $response = [
+                    'status' => 'error',
+                    'message' => sprintf( _x( 'HTTP Error %1$d: %2$s', 'HTTP Error', 'disciple-tools-ai' ), $http_code, $transcription_response )
+                ];
+            } else {
+                $decoded_response = json_decode( $transcription_response, true );
+
+                if ( !empty( $decoded_response['text'] ) ) {
+
+                    // Check if we have segments for HTML formatting
+                    $html_transcription = '';
+
+                    if ( !empty( $decoded_response['segments'] ) && is_array( $decoded_response['segments'] ) ) {
+
+                        // Build HTML with segments and timestamps
+                        foreach ( $decoded_response['segments'] as $segment ) {
+                            $start_time = $segment['start'] ?? 0;
+                            $end_time = $segment['end'] ?? 0;
+                            $segment_text = $segment['text'] ?? '';
+
+                            $html_transcription .= '<div style="margin-bottom: 10px;">';
+                            $html_transcription .= '<strong>' . $start_time . ' - ' . $end_time . '</strong> ';
+                            $html_transcription .= htmlspecialchars( $segment_text );
+                            $html_transcription .= '</div>';
+                            $html_transcription .= '<br><br>';
+                        }
+                    } else {
+                        // Fallback: wrap plain text in simple HTML structure
+                        $html_transcription = '<div style="margin-bottom: 10px;">' . htmlspecialchars( $decoded_response['text'] ) . '</div>';
+                    }
+
+                    $response = [
+                        'status' => 'success',
+                        'message' => '',
+                        'transcription' => [
+                            'text' => $decoded_response['text'],
+                            'html' => $html_transcription
+                        ]
+                    ];
+                } elseif ( isset( $decoded_response['error'] ) ) {
+                    $response = [
+                        'status' => 'error',
+                        'message' => sprintf( _x( 'Unable to generate transcription: %s', 'Unable to generate transcription', 'disciple-tools-ai' ), $decoded_response['error'] )
+                    ];
+                }
+            }
+        } catch ( Exception $e ) {
+            $response = [
+                'status' => 'error',
+                'message' => sprintf( _x( 'Unable to generate transcription: %s', 'Unable to generate transcription', 'disciple-tools-ai' ), $e->getMessage() )
+            ];
+        }
+
+        return !empty( $response ) ? $response : [
+            'status' => 'error',
+            'message' => sprintf( _x( 'Unable to generate transcription: %s', 'Unable to generate transcription', 'disciple-tools-ai' ), '' )
+        ];
     }
 }
