@@ -28,6 +28,7 @@ function dt_upload_audio_comment_languages() {
             $languages = dt_get_global_languages_list();
             foreach ( $languages as $code => $language ) {
                 if ( in_array( $code, [
+                    'ar',
                     'nl',
                     'es',
                     'ko',
