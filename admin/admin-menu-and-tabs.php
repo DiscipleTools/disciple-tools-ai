@@ -144,67 +144,104 @@ class Disciple_Tools_AI_Tab_General {
         <form method="post">
             <?php wp_nonce_field( 'dt_admin_form', 'dt_admin_form_nonce' ) ?>
 
+            <p>
+                Turn AI on for superpowers. For this, you will need to get an API key from your favorite AI provider(s).
+                <br>
+                Please use an AI model that you trust. Contact data and personal information may be shared with these models.
+                <br>
+                Consider contacting <a href="https://predictionguard.com" target="_blank">predictionguard.com</a> to get a model that is safe to use.
+            </p>
+
             <table class="widefat striped">
                 <thead>
                 <tr>
-                    <th>Settings</th>
-                    <th></th>
+                    <th colspan="2"><span style="font-weight: bold;">Chat Model</span></th>
                 </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td colspan="2">
-                            <p>
-                                Turn AI on for superpowers.
-                                <br>
-                                For this you will need to get an API key from your favorite AI provider.
-                                <br>
-                                Please use an AI model that you trust. Contact data and personal information may be shared with these models.
-                                <br>
-                                Consider contacting <a href="https://predictionguard.com" target="_blank">predictionguard.com</a> to get a model that is safe to use.
-                            </p>
+                        <td>
+                            Endpoint
+                        </td>
+                        <td>
+                            <input type="text" name="llm-endpoint" placeholder="" value="<?php echo esc_attr( $connection_settings['llm_endpoint'] ) ?>" style="width: 100%">
                         </td>
                     </tr>
-                <tr>
-                    <td>
-                        Your LLM Endpoint
-                    </td>
-                    <td>
-                        <input type="text" name="llm-endpoint" placeholder="" value="<?php echo esc_attr( $connection_settings['llm_endpoint'] ) ?>" style="width: 100%">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        Your LLM API Key
-                    </td>
-                    <td>
-                        <input type="text" name="llm-api-key" placeholder=""
-                               value="<?php echo esc_attr( $connection_settings['llm_api_key'] ? '•••••••' : '' ) ?>" style="width: 100%">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        Your LLM Model
-                    </td>
-                    <td>
-                        <input type="text" name="llm-model" placeholder="" value="<?php echo esc_attr( $connection_settings['llm_model'] ) ?>" style="width: 100%">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <button class="button">Save</button>
-                    </td>
-                    <td></td>
-                </tr>
+                    <tr>
+                        <td>
+                            API Key
+                        </td>
+                        <td>
+                            <input type="text" name="llm-api-key" placeholder=""
+                                   value="<?php echo esc_attr( $connection_settings['llm_api_key'] ? '•••••••' : '' ) ?>" style="width: 100%">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Model
+                        </td>
+                        <td>
+                            <input type="text" name="llm-model" placeholder="" value="<?php echo esc_attr( $connection_settings['llm_model'] ) ?>" style="width: 100%">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <span style="float:right;">
+                                <button class="button" type="submit">Save</button>
+                            </span>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
-
             <br>
+
             <table class="widefat striped">
                 <thead>
                 <tr>
-                    <th>Enabled Features</th>
-                    <th></th>
+                    <th colspan="2"><span style="font-weight: bold;">Transcription Model</span></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        Endpoint
+                    </td>
+                    <td>
+                        <input type="text" name="transcript-llm-endpoint" placeholder="" value="<?php echo esc_attr( $connection_settings['transcript_llm_endpoint'] ) ?>" style="width: 100%">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        API Key
+                    </td>
+                    <td>
+                        <input type="text" name="transcript-llm-api-key" placeholder=""
+                               value="<?php echo esc_attr( $connection_settings['transcript_llm_api_key'] ? '•••••••' : '' ) ?>" style="width: 100%">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Model
+                    </td>
+                    <td>
+                        <input type="text" name="transcript-llm-model" placeholder="" value="<?php echo esc_attr( $connection_settings['transcript_llm_model'] ) ?>" style="width: 100%">
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                            <span style="float:right;">
+                                <button class="button" type="submit">Save</button>
+                            </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <br>
+
+            <table class="widefat striped">
+                <thead>
+                <tr>
+                    <th colspan="2"><span style="font-weight: bold;">Enabled Features</span></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -227,10 +264,11 @@ class Disciple_Tools_AI_Tab_General {
                 }
                 ?>
                 <tr>
-                    <td>
-                        <button class="button">Save</button>
+                    <td colspan="2">
+                        <span style="float:right;">
+                            <button class="button" type="submit">Save</button>
+                        </span>
                     </td>
-                    <td></td>
                 </tr>
                 </tbody>
             </table>
@@ -255,6 +293,18 @@ class Disciple_Tools_AI_Tab_General {
 
             if ( isset( $post_vars['llm-model'] ) ) {
                 update_option( 'DT_AI_llm_model', $post_vars['llm-model'] );
+            }
+
+            if ( isset( $post_vars['transcript-llm-api-key'] ) && $post_vars['transcript-llm-api-key'] !== '•••••••' ){
+                update_option( 'DT_AI_transcript_llm_api_key', $post_vars['transcript-llm-api-key'] );
+            }
+
+            if ( isset( $post_vars['transcript-llm-endpoint'] ) ) {
+                update_option( 'DT_AI_transcript_llm_endpoint', $post_vars['transcript-llm-endpoint'] );
+            }
+
+            if ( isset( $post_vars['transcript-llm-model'] ) ) {
+                update_option( 'DT_AI_transcript_llm_model', $post_vars['transcript-llm-model'] );
             }
 
             /**

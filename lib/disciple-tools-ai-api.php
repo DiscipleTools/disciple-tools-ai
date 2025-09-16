@@ -16,24 +16,45 @@ class Disciple_Tools_AI_API {
         $llm_api_key = get_option( 'DT_AI_llm_api_key' );
         $llm_model = get_option( 'DT_AI_llm_model' );
 
+        $transcript_llm_endpoint = get_option( 'DT_AI_transcript_llm_endpoint' );
+        $transcript_llm_api_key = get_option( 'DT_AI_transcript_llm_api_key' );
+        $transcript_llm_model = get_option( 'DT_AI_transcript_llm_model' );
+
         // Empty local site options will default back to multisite network settings.
-        if ( is_multisite() && ( empty( $llm_endpoint ) || empty( $llm_api_key ) || empty( $llm_model ) ) ){
-            if ( empty( $llm_endpoint ) ){
-                $llm_endpoint = get_site_option( 'DT_AI_llm_endpoint', null );
+        if ( is_multisite() ) {
+            if ( ( empty( $llm_endpoint ) || empty( $llm_api_key ) || empty( $llm_model ) ) ) {
+                if ( empty( $llm_endpoint ) ){
+                    $llm_endpoint = get_site_option( 'DT_AI_llm_endpoint', null );
+                }
+                if ( empty( $llm_api_key ) ){
+                    $llm_api_key = get_site_option( 'DT_AI_llm_api_key', null );
+                }
+                if ( empty( $llm_model ) ){
+                    $llm_model = get_site_option( 'DT_AI_llm_model', null );
+                }
             }
-            if ( empty( $llm_api_key ) ){
-                $llm_api_key = get_site_option( 'DT_AI_llm_api_key', null );
-            }
-            if ( empty( $llm_model ) ){
-                $llm_model = get_site_option( 'DT_AI_llm_model', null );
+
+            if ( ( empty( $transcript_llm_endpoint ) || empty( $transcript_llm_api_key ) || empty( $transcript_llm_model ) ) ) {
+                if ( empty( $transcript_llm_endpoint ) ){
+                    $transcript_llm_endpoint = get_site_option( 'DT_AI_transcript_llm_endpoint', null );
+                }
+                if ( empty( $transcript_llm_api_key ) ){
+                    $transcript_llm_api_key = get_site_option( 'DT_AI_transcript_llm_api_key', null );
+                }
+                if ( empty( $transcript_llm_model ) ){
+                    $transcript_llm_model = get_site_option( 'DT_AI_transcript_llm_model', null );
+                }
             }
         }
 
         return [
-            'enabled' => !empty( $llm_endpoint ) && !empty( $llm_api_key ) && !empty( $llm_model ),
+            'enabled' => !empty( $llm_endpoint ) && !empty( $llm_api_key ) && !empty( $llm_model ) && !empty( $transcript_llm_endpoint ) && !empty( $transcript_llm_api_key ) && !empty( $transcript_llm_model ),
             'llm_endpoint' => $llm_endpoint,
             'llm_api_key' => $llm_api_key,
             'llm_model' => $llm_model,
+            'transcript_llm_endpoint' => $transcript_llm_endpoint,
+            'transcript_llm_api_key' => $transcript_llm_api_key,
+            'transcript_llm_model' => $transcript_llm_model
         ];
     }
 
@@ -2141,11 +2162,14 @@ class Disciple_Tools_AI_API {
          */
 
         $connection_settings = self::get_ai_connection_settings();
-        $llm_endpoint_root = $connection_settings['llm_endpoint'];
-        $llm_api_key = $connection_settings['llm_api_key'];
-        $llm_model = 'base';
+        $llm_endpoint_root = $connection_settings['transcript_llm_endpoint'];
+        $llm_api_key = $connection_settings['transcript_llm_api_key'];
+        $llm_model = $connection_settings['transcript_llm_model'];
 
-        $llm_endpoint = $llm_endpoint_root . '/audio/transcriptions';
+        $llm_endpoint = $llm_endpoint_root;
+        if ( !str_contains( $llm_endpoint, 'audio' ) ) {
+            $llm_endpoint = trailingslashit( $llm_endpoint ) . 'audio/transcriptions';
+        }
 
         /**
          * Proceed with transcription execution.
@@ -2169,7 +2193,7 @@ class Disciple_Tools_AI_API {
                 'temperature' => '0.1',
                 'timestamps_granularities' => '["segment"]',
                 'diarization' => 'true',
-                'response_format' => 'verbose_json'
+                'response_format' => 'json'
             ];
 
             curl_setopt_array( $ch, [
