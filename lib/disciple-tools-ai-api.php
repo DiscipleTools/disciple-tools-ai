@@ -12,49 +12,36 @@ class Disciple_Tools_AI_API {
     public static $module_default_id_dt_ai_audio_comment_transcription = 'dt_ai_audio_comment_transcription';
 
     public static function get_ai_connection_settings(){
-        $llm_endpoint = get_option( 'DT_AI_llm_endpoint' );
-        $llm_api_key = get_option( 'DT_AI_llm_api_key' );
-        $llm_model = get_option( 'DT_AI_llm_model' );
-
-        $transcript_llm_endpoint = get_option( 'DT_AI_transcript_llm_endpoint' );
-        $transcript_llm_api_key = get_option( 'DT_AI_transcript_llm_api_key' );
-        $transcript_llm_model = get_option( 'DT_AI_transcript_llm_model' );
+        // Get local settings from single array option
+        $settings = get_option( 'DT_AI_connection_settings', [
+            'llm_endpoint' => '',
+            'llm_api_key' => '',
+            'llm_model' => '',
+            'transcript_llm_endpoint' => '',
+            'transcript_llm_api_key' => '',
+            'transcript_llm_model' => ''
+        ] );
 
         // Empty local site options will default back to multisite network settings.
         if ( is_multisite() ) {
-            if ( ( empty( $llm_endpoint ) || empty( $llm_api_key ) || empty( $llm_model ) ) ) {
-                if ( empty( $llm_endpoint ) ){
-                    $llm_endpoint = get_site_option( 'DT_AI_llm_endpoint', null );
-                }
-                if ( empty( $llm_api_key ) ){
-                    $llm_api_key = get_site_option( 'DT_AI_llm_api_key', null );
-                }
-                if ( empty( $llm_model ) ){
-                    $llm_model = get_site_option( 'DT_AI_llm_model', null );
-                }
-            }
+            // Get all network settings from single option
+            $network_settings = get_site_option( 'DT_AI_connection_settings', [] );
 
-            if ( ( empty( $transcript_llm_endpoint ) || empty( $transcript_llm_api_key ) || empty( $transcript_llm_model ) ) ) {
-                if ( empty( $transcript_llm_endpoint ) ){
-                    $transcript_llm_endpoint = get_site_option( 'DT_AI_transcript_llm_endpoint', null );
-                }
-                if ( empty( $transcript_llm_api_key ) ){
-                    $transcript_llm_api_key = get_site_option( 'DT_AI_transcript_llm_api_key', null );
-                }
-                if ( empty( $transcript_llm_model ) ){
-                    $transcript_llm_model = get_site_option( 'DT_AI_transcript_llm_model', null );
+            foreach ( $settings as $key => $value ) {
+                if ( empty( $value ) && isset( $network_settings[$key] ) && !empty( $network_settings[$key] ) ) {
+                    $settings[$key] = $network_settings[$key];
                 }
             }
         }
 
         return [
-            'enabled' => !empty( $llm_endpoint ) && !empty( $llm_api_key ) && !empty( $llm_model ) && !empty( $transcript_llm_endpoint ) && !empty( $transcript_llm_api_key ) && !empty( $transcript_llm_model ),
-            'llm_endpoint' => $llm_endpoint,
-            'llm_api_key' => $llm_api_key,
-            'llm_model' => $llm_model,
-            'transcript_llm_endpoint' => $transcript_llm_endpoint,
-            'transcript_llm_api_key' => $transcript_llm_api_key,
-            'transcript_llm_model' => $transcript_llm_model
+            'enabled' => !empty( $settings['llm_endpoint'] ) && !empty( $settings['llm_api_key'] ) && !empty( $settings['llm_model'] ) && !empty( $settings['transcript_llm_endpoint'] ) && !empty( $settings['transcript_llm_api_key'] ) && !empty( $settings['transcript_llm_model'] ),
+            'llm_endpoint' => $settings['llm_endpoint'],
+            'llm_api_key' => $settings['llm_api_key'],
+            'llm_model' => $settings['llm_model'],
+            'transcript_llm_endpoint' => $settings['transcript_llm_endpoint'],
+            'transcript_llm_api_key' => $settings['transcript_llm_api_key'],
+            'transcript_llm_model' => $settings['transcript_llm_model']
         ];
     }
 
