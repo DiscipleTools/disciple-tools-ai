@@ -2167,6 +2167,9 @@ class Disciple_Tools_AI_API {
         $llm_model = $connection_settings['transcript_llm_model'];
 
         $llm_endpoint = $llm_endpoint_root;
+        if ( !str_contains( $llm_endpoint, 'audio' ) ) {
+            $llm_endpoint = trailingslashit( $llm_endpoint ) . 'audio/transcriptions';
+        }
 
         /**
          * Proceed with transcription execution.
