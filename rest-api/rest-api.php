@@ -142,7 +142,7 @@ Output format:
         $summary = $body['choices'][0]['message']['content'];
 
         $post_updated = false;
-        if ( isset( $post_type, $post_id ) && in_array( $post_type, [ 'contacts', 'ai' ] ) ) {
+        if ( isset( $post_type, $post_id, $field_settings['ai_summary'] ) ) {
             $updated = DT_Posts::update_post( $post_type, $post_id, [
                 'ai_summary' => $summary
             ] );

@@ -49,6 +49,9 @@ class Disciple_Tools_AI_Tile
         }
 
         $ai_summary = isset( $dt_post['ai_summary'] ) ? $dt_post['ai_summary'] : '';
+        $generate_label = __( 'Generate', 'disciple-tools-ai' );
+        $regenerate_label = __( 'Re-generate', 'disciple-tools-ai' );
+        $button_label = empty( $ai_summary ) ? $generate_label : $regenerate_label;
         ?>
         <style>
             .ai-summary-inline {
@@ -58,6 +61,8 @@ class Disciple_Tools_AI_Tile
                 margin-bottom: 12px;
                 position: relative;
                 overflow: hidden;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, .25);
+                border-radius: 5px;
             }
             .ai-summary-inline::before {
                 content: '';
@@ -154,8 +159,8 @@ class Disciple_Tools_AI_Tile
                 <div class="ai-summary-main">
                     <div class="ai-summary-header-inline">
                         <span class="ai-summary-label"><?php esc_html_e( 'AI Insights', 'disciple-tools-ai' ); ?></span>
-                        <button id="dt-ai-summary-button" class="ai-summary-button-inline loader">
-                            <?php esc_html_e( 'Generate', 'disciple-tools-ai' ); ?>
+                        <button id="dt-ai-summary-button" class="ai-summary-button-inline loader" data-default-label="<?php echo esc_attr( $button_label ); ?>">
+                            <?php echo esc_html( $button_label ); ?>
                         </button>
                     </div>
                     <p id="dt-ai-summary" class="ai-summary-text"><?php echo esc_html( $ai_summary ); ?></p>
@@ -165,13 +170,16 @@ class Disciple_Tools_AI_Tile
 
         <script>
             document.addEventListener('DOMContentLoaded', function(){
-                document.getElementById('dt-ai-summary-button').addEventListener('click', function(){
-                    this.classList.add('loading');
-                    this.textContent = '<?php esc_html_e( 'Working...', 'disciple-tools-ai' ); ?>';
-                    const post_type = window.commentsSettings?.post?.post_type;
-                    const post_id = window.commentsSettings?.post?.ID;
-                    prepareDataForLLM( post_type, post_id );
-                });
+                const aiSummaryButton = document.getElementById('dt-ai-summary-button');
+                if (aiSummaryButton) {
+                    aiSummaryButton.addEventListener('click', function(){
+                        this.classList.add('loading');
+                        this.textContent = '<?php esc_html_e( 'Working...', 'disciple-tools-ai' ); ?>';
+                        const post_type = window.commentsSettings?.post?.post_type;
+                        const post_id = window.commentsSettings?.post?.ID;
+                        prepareDataForLLM( post_type, post_id );
+                    });
+                }
             });
 
             function prepareDataForLLM(post_type, post_id) {
@@ -188,9 +196,10 @@ class Disciple_Tools_AI_Tile
                 })
                 .then(response => response.json())
                 .then(data => {
-                    const button = document.querySelector('#dt-ai-summary-button');
+                    const button = document.getElementById('dt-ai-summary-button');
                     button.classList.remove('loading');
-                    button.textContent = '<?php esc_html_e( 'Refresh', 'disciple-tools-ai' ); ?>';
+                    button.dataset.defaultLabel = '<?php echo esc_js( $regenerate_label ); ?>';
+                    button.textContent = button.dataset.defaultLabel;
 
                     // Determine action to take based on endpoint response.
                     if ( data?.data?.status === 401 && data?.message ) {
@@ -206,9 +215,9 @@ class Disciple_Tools_AI_Tile
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    const button = document.querySelector('#dt-ai-summary-button');
+                    const button = document.getElementById('dt-ai-summary-button');
                     button.classList.remove('loading');
-                    button.textContent = '<?php esc_html_e( 'Generate', 'disciple-tools-ai' ); ?>';
+                    button.textContent = button.dataset.defaultLabel || '<?php echo esc_js( $generate_label ); ?>';
                     document.querySelector('#dt-ai-summary').innerText = 'Error generating summary. Please try again.';
                 });
             }
