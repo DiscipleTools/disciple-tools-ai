@@ -283,29 +283,44 @@ class Disciple_Tools_AI_Tab_General {
 
             $post_vars = dt_recursive_sanitize_array( $_POST );
 
-            if ( isset( $post_vars['llm-api-key'] ) && $post_vars['llm-api-key'] !== '•••••••' ){
-                update_option( 'DT_AI_llm_api_key', $post_vars['llm-api-key'] );
-            }
+            // Get current settings to preserve existing values
+            $current_settings = get_option( 'DT_AI_connection_settings', [
+                'llm_endpoint' => '',
+                'llm_api_key' => '',
+                'llm_model' => '',
+                'transcript_llm_endpoint' => '',
+                'transcript_llm_api_key' => '',
+                'transcript_llm_model' => ''
+            ] );
+
+            $updated_settings = $current_settings;
 
             if ( isset( $post_vars['llm-endpoint'] ) ) {
-                update_option( 'DT_AI_llm_endpoint', $post_vars['llm-endpoint'] );
+                $updated_settings['llm_endpoint'] = $post_vars['llm-endpoint'];
+            }
+
+            if ( isset( $post_vars['llm-api-key'] ) && $post_vars['llm-api-key'] !== '•••••••' ) {
+                $updated_settings['llm_api_key'] = $post_vars['llm-api-key'];
             }
 
             if ( isset( $post_vars['llm-model'] ) ) {
-                update_option( 'DT_AI_llm_model', $post_vars['llm-model'] );
-            }
-
-            if ( isset( $post_vars['transcript-llm-api-key'] ) && $post_vars['transcript-llm-api-key'] !== '•••••••' ){
-                update_option( 'DT_AI_transcript_llm_api_key', $post_vars['transcript-llm-api-key'] );
+                $updated_settings['llm_model'] = $post_vars['llm-model'];
             }
 
             if ( isset( $post_vars['transcript-llm-endpoint'] ) ) {
-                update_option( 'DT_AI_transcript_llm_endpoint', $post_vars['transcript-llm-endpoint'] );
+                $updated_settings['transcript_llm_endpoint'] = $post_vars['transcript-llm-endpoint'];
+            }
+
+            if ( isset( $post_vars['transcript-llm-api-key'] ) && $post_vars['transcript-llm-api-key'] !== '•••••••' ) {
+                $updated_settings['transcript_llm_api_key'] = $post_vars['transcript-llm-api-key'];
             }
 
             if ( isset( $post_vars['transcript-llm-model'] ) ) {
-                update_option( 'DT_AI_transcript_llm_model', $post_vars['transcript-llm-model'] );
+                $updated_settings['transcript_llm_model'] = $post_vars['transcript-llm-model'];
             }
+
+            // Save all settings as a single array
+            update_option( 'DT_AI_connection_settings', $updated_settings );
 
             /**
              * Process incoming module state changes.
