@@ -52,7 +52,7 @@ class Disciple_Tools_AI_API {
         $language_options = dt_get_option( 'dt_working_languages' ) ?: [];
         $languages = [];
         foreach ( $language_options as $key => $language_option ) {
-            if ( $language_option['enabled'] ) {
+            if ( empty( $language_option['deleted'] ) ) {
                 $languages[] = $key;
             }
         }
@@ -161,6 +161,12 @@ class Disciple_Tools_AI_API {
             }
 
             $translations[ $language ] = html_entity_decode( $translated_text, ENT_QUOTES, 'UTF-8' );
+        }
+
+        if ( empty( $translations ) ) {
+            $translations = [
+                'en_US' => $summary,
+            ];
         }
 
         return $translations;

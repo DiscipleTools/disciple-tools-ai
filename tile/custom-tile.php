@@ -67,7 +67,7 @@ class Disciple_Tools_AI_Tile
                 }
                 $ai_summary_entries[] = [
                     'code'  => $language_code,
-                    'label' => $available_languages[$language_code]['flag'] . ' ' . ( $available_languages[$language_code]['root_name'] ?? $$available_languages[$language_code]['english_name'] ),
+                    'label' => $available_languages[$language_code]['flag'] . ' ' . ( $available_languages[$language_code]['root_name'] ?? $available_languages[$language_code]['native_name'] ),
                     'text'  => $summary_text,
                     'dir' => $available_languages[$language_code]['rtl'] ? 'rtl' : 'ltr',
                 ];
@@ -141,7 +141,17 @@ class Disciple_Tools_AI_Tile
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 8px;
                 margin-bottom: 6px;
+            }
+            .ai-summary-header-main {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex: 1 1 auto;
+                flex-wrap: wrap;
+                min-width: 0;
             }
             .ai-summary-label {
                 font-size: 12px;
@@ -193,7 +203,7 @@ class Disciple_Tools_AI_Tile
                 display: flex;
                 flex-wrap: wrap;
                 gap: 6px;
-                margin-bottom: 8px;
+                margin-bottom: 0;
             }
             .ai-summary-tab-button {
                 font-size: 12px;
@@ -228,34 +238,36 @@ class Disciple_Tools_AI_Tile
                 <div class="ai-summary-icon"></div>
                 <div class="ai-summary-main" id="dt-ai-summary-root">
                     <div class="ai-summary-header-inline">
-                        <span class="ai-summary-label"><?php esc_html_e( 'AI Insights', 'disciple-tools-ai' ); ?></span>
+                        <div class="ai-summary-header-main">
+                            <span class="ai-summary-label"><?php esc_html_e( 'AI Insights', 'disciple-tools-ai' ); ?></span>
+                            <div id="dt-ai-summary-tabs" class="ai-summary-tabs<?php echo $has_ai_summary ? '' : ' is-hidden'; ?>" role="tablist" aria-label="<?php esc_attr_e( 'AI summary languages', 'disciple-tools-ai' ); ?>">
+                                <?php foreach ( $ai_summary_entries as $index => $entry ) :
+                                    $tab_slug = sanitize_html_class( strtolower( str_replace( [ ' ', ':' ], '-', $entry['code'] ) ) );
+                                    if ( '' === $tab_slug ) {
+                                        $tab_slug = 'lang-' . substr( md5( $entry['code'] ), 0, 6 );
+                                    }
+                                    $tab_id = 'ai-summary-tab-' . $tab_slug;
+                                    $panel_id = $tab_id . '-panel';
+                                    $is_active = $entry['code'] === $active_locale;
+                                    ?>
+                                    <button
+                                        type="button"
+                                        id="<?php echo esc_attr( $tab_id ); ?>"
+                                        class="ai-summary-tab-button<?php echo $is_active ? ' is-active' : ''; ?>"
+                                        data-lang="<?php echo esc_attr( $entry['code'] ); ?>"
+                                        role="tab"
+                                        aria-controls="<?php echo esc_attr( $panel_id ); ?>"
+                                        aria-selected="<?php echo $is_active ? 'true' : 'false'; ?>"
+                                        tabindex="<?php echo $is_active ? '0' : '-1'; ?>"
+                                    >
+                                        <?php echo esc_html( $entry['label'] ); ?>
+                                    </button>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                         <button id="dt-ai-summary-button" class="ai-summary-button-inline loader" data-default-label="<?php echo esc_attr( $button_label ); ?>">
                             <?php echo esc_html( $button_label ); ?>
                         </button>
-                    </div>
-                    <div id="dt-ai-summary-tabs" class="ai-summary-tabs<?php echo $has_ai_summary ? '' : ' is-hidden'; ?>" role="tablist" aria-label="<?php esc_attr_e( 'AI summary languages', 'disciple-tools-ai' ); ?>">
-                        <?php foreach ( $ai_summary_entries as $index => $entry ) :
-                            $tab_slug = sanitize_html_class( strtolower( str_replace( [ ' ', ':' ], '-', $entry['code'] ) ) );
-                            if ( '' === $tab_slug ) {
-                                $tab_slug = 'lang-' . substr( md5( $entry['code'] ), 0, 6 );
-                            }
-                            $tab_id = 'ai-summary-tab-' . $tab_slug;
-                            $panel_id = $tab_id . '-panel';
-                            $is_active = $entry['code'] === $active_locale;
-                            ?>
-                            <button
-                                type="button"
-                                id="<?php echo esc_attr( $tab_id ); ?>"
-                                class="ai-summary-tab-button<?php echo $is_active ? ' is-active' : ''; ?>"
-                                data-lang="<?php echo esc_attr( $entry['code'] ); ?>"
-                                role="tab"
-                                aria-controls="<?php echo esc_attr( $panel_id ); ?>"
-                                aria-selected="<?php echo $is_active ? 'true' : 'false'; ?>"
-                                tabindex="<?php echo $is_active ? '0' : '-1'; ?>"
-                            >
-                                <?php echo esc_html( $entry['label'] ); ?>
-                            </button>
-                        <?php endforeach; ?>
                     </div>
                     <div id="dt-ai-summary-panels" class="ai-summary-panels<?php echo $has_ai_summary ? '' : ' is-hidden'; ?>">
                         <?php foreach ( $ai_summary_entries as $index => $entry ) :
