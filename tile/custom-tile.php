@@ -28,9 +28,9 @@ class Disciple_Tools_AI_Tile
      * @return array
      */
     public function dt_custom_fields( array $fields, string $post_type = '' ) {
-        $fields['ai_summary'] = [
+        $fields['ai_summary_array'] = [
             'name' => __( 'AI Summary', 'disciple-tools-ai' ),
-            'type' => 'textarea',
+            'type' => 'array',
             //'hidden' => true, // Hide from normal field display since we show it in custom section
         ];
         return $fields;
@@ -48,10 +48,43 @@ class Disciple_Tools_AI_Tile
             return;
         }
 
-        $ai_summary = isset( $dt_post['ai_summary'] ) ? $dt_post['ai_summary'] : '';
+        $ai_summary_raw = $dt_post['ai_summary_array'] ?? [];
+        if ( !empty( $ai_summary_raw ) && is_string( $ai_summary_raw ) ) {
+            $ai_summary_raw = [ 'en_US' => $ai_summary_raw ];
+        }
+
+        $language_keys = array_keys( $ai_summary_raw ?? [] );
+        $available_languages = dt_get_available_languages( true, false, $language_keys );
+        $site_locale = get_locale();
+
+       
+        $ai_summary_entries = [];
+
+        if ( is_array( $ai_summary_raw ) ) {
+            foreach ( $ai_summary_raw as $language_code => $summary_text ) {
+                if ( !is_string( $summary_text ) || '' === trim( $summary_text ) || empty( $language_code ) ) {
+                    continue;
+                }
+                $ai_summary_entries[] = [
+                    'code'  => $language_code,
+                    'label' => $available_languages[$language_code]['flag'] . ' ' . ( $available_languages[$language_code]['root_name'] ?? $$available_languages[$language_code]['english_name'] ),
+                    'text'  => $summary_text,
+                    'dir' => $available_languages[$language_code]['rtl'] ? 'rtl' : 'ltr',
+                ];
+            }
+        }
+
+        $has_ai_summary = !empty( $ai_summary_entries );
+        $active_locale = $site_locale;
+        if ( $has_ai_summary ) {
+            $entry_codes = array_column( $ai_summary_entries, 'code' );
+            if ( !in_array( $active_locale, $entry_codes, true ) ) {
+                $active_locale = $entry_codes[0] ?? $active_locale;
+            }
+        }
         $generate_label = __( 'Generate', 'disciple-tools-ai' );
         $regenerate_label = __( 'Re-generate', 'disciple-tools-ai' );
-        $button_label = empty( $ai_summary ) ? $generate_label : $regenerate_label;
+        $button_label = $has_ai_summary ? $regenerate_label : $generate_label;
         ?>
         <style>
             .ai-summary-inline {
@@ -144,26 +177,105 @@ class Disciple_Tools_AI_Tile
                 font-style: italic;
             }
             .ai-summary-text:empty::before {
-                content: "Generate an AI summary to see key insights about this contact...";
+                content: attr(data-placeholder);
                 color: #9ca3af;
                 font-style: italic;
             }
             .ai-summary-text:not(:empty) {
                 font-style: normal;
             }
+            .ai-summary-tabs {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                margin-bottom: 8px;
+            }
+            .ai-summary-tab-button {
+                font-size: 12px;
+                padding: 4px 10px;
+                border-radius: 12px;
+                border: 1px solid #007cba;
+                background: #ffffff;
+                color: #007cba;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+            .ai-summary-tab-button:hover {
+                background: rgba(0, 124, 186, 0.08);
+            }
+            .ai-summary-tab-button.is-active {
+                background: #007cba;
+                color: white;
+            }
+            .ai-summary-panel {
+                display: none;
+            }
+            .ai-summary-panel.is-active {
+                display: block;
+            }
+            .is-hidden {
+                display: none !important;
+            }
         </style>
 
         <section class="cell small-12 ai-summary-inline">
             <div class="ai-summary-row">
                 <div class="ai-summary-icon"></div>
-                <div class="ai-summary-main">
+                <div class="ai-summary-main" id="dt-ai-summary-root">
                     <div class="ai-summary-header-inline">
                         <span class="ai-summary-label"><?php esc_html_e( 'AI Insights', 'disciple-tools-ai' ); ?></span>
                         <button id="dt-ai-summary-button" class="ai-summary-button-inline loader" data-default-label="<?php echo esc_attr( $button_label ); ?>">
                             <?php echo esc_html( $button_label ); ?>
                         </button>
                     </div>
-                    <p id="dt-ai-summary" class="ai-summary-text"><?php echo esc_html( $ai_summary ); ?></p>
+                    <div id="dt-ai-summary-tabs" class="ai-summary-tabs<?php echo $has_ai_summary ? '' : ' is-hidden'; ?>" role="tablist" aria-label="<?php esc_attr_e( 'AI summary languages', 'disciple-tools-ai' ); ?>">
+                        <?php foreach ( $ai_summary_entries as $index => $entry ) :
+                            $tab_slug = sanitize_html_class( strtolower( str_replace( [ ' ', ':' ], '-', $entry['code'] ) ) );
+                            if ( '' === $tab_slug ) {
+                                $tab_slug = 'lang-' . substr( md5( $entry['code'] ), 0, 6 );
+                            }
+                            $tab_id = 'ai-summary-tab-' . $tab_slug;
+                            $panel_id = $tab_id . '-panel';
+                            $is_active = $entry['code'] === $active_locale;
+                            ?>
+                            <button
+                                type="button"
+                                id="<?php echo esc_attr( $tab_id ); ?>"
+                                class="ai-summary-tab-button<?php echo $is_active ? ' is-active' : ''; ?>"
+                                data-lang="<?php echo esc_attr( $entry['code'] ); ?>"
+                                role="tab"
+                                aria-controls="<?php echo esc_attr( $panel_id ); ?>"
+                                aria-selected="<?php echo $is_active ? 'true' : 'false'; ?>"
+                                tabindex="<?php echo $is_active ? '0' : '-1'; ?>"
+                            >
+                                <?php echo esc_html( $entry['label'] ); ?>
+                            </button>
+                        <?php endforeach; ?>
+                    </div>
+                    <div id="dt-ai-summary-panels" class="ai-summary-panels<?php echo $has_ai_summary ? '' : ' is-hidden'; ?>">
+                        <?php foreach ( $ai_summary_entries as $index => $entry ) :
+                            $tab_slug = sanitize_html_class( strtolower( str_replace( [ ' ', ':' ], '-', $entry['code'] ) ) );
+                            if ( '' === $tab_slug ) {
+                                $tab_slug = 'lang-' . substr( md5( $entry['code'] ), 0, 6 );
+                            }
+                            $tab_id = 'ai-summary-tab-' . $tab_slug;
+                            $panel_id = $tab_id . '-panel';
+                            $is_active = $entry['code'] === $active_locale;
+                            ?>
+                            <div
+                                id="<?php echo esc_attr( $panel_id ); ?>"
+                                class="ai-summary-text ai-summary-panel<?php echo $is_active ? ' is-active' : ''; ?>"
+                                data-lang="<?php echo esc_attr( $entry['code'] ); ?>"
+                                role="tabpanel"
+                                aria-labelledby="<?php echo esc_attr( $tab_id ); ?>"
+                                aria-hidden="<?php echo $is_active ? 'false' : 'true'; ?>"
+                                dir="<?php echo esc_attr( $entry['dir'] ); ?>"
+                            >
+                                <?php echo esc_html( $entry['text'] ); ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <p id="dt-ai-summary-placeholder" class="ai-summary-text<?php echo $has_ai_summary ? ' is-hidden' : ''; ?>" data-placeholder="<?php esc_attr_e( 'Generate an AI summary to see key insights about this contact...', 'disciple-tools-ai' ); ?>" dir="auto"></p>
                 </div>
             </div>
         </section>
@@ -180,7 +292,65 @@ class Disciple_Tools_AI_Tile
                         prepareDataForLLM( post_type, post_id );
                     });
                 }
+
+                const tabsContainer = document.getElementById('dt-ai-summary-tabs');
+                const panelsContainer = document.getElementById('dt-ai-summary-panels');
+                const setActiveTab = (languageCode) => {
+                    if (!tabsContainer || !panelsContainer) {
+                        return;
+                    }
+
+                    tabsContainer.querySelectorAll('[role="tab"]').forEach((tab) => {
+                        const isActive = tab.dataset.lang === languageCode;
+                        tab.classList.toggle('is-active', isActive);
+                        tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                        tab.setAttribute('tabindex', isActive ? '0' : '-1');
+                    });
+
+                    panelsContainer.querySelectorAll('[role="tabpanel"]').forEach((panel) => {
+                        const isActive = panel.dataset.lang === languageCode;
+                        panel.classList.toggle('is-active', isActive);
+                        panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+                    });
+                };
+
+                const defaultLocale = '<?php echo esc_js( $active_locale ); ?>';
+
+                if (tabsContainer) {
+                    if (defaultLocale) {
+                        setActiveTab(defaultLocale);
+                    }
+                    tabsContainer.addEventListener('click', (event) => {
+                        const tab = event.target.closest('[role="tab"]');
+                        if (!tab || !tabsContainer.contains(tab)) {
+                            return;
+                        }
+                        setActiveTab(tab.dataset.lang);
+                    });
+                }
             });
+
+            function showAiSummaryMessage(message) {
+                const root = document.getElementById('dt-ai-summary-root');
+                if (!root) {
+                    return;
+                }
+
+                const tabsContainer = root.querySelector('#dt-ai-summary-tabs');
+                const panelsContainer = root.querySelector('#dt-ai-summary-panels');
+                const placeholder = root.querySelector('#dt-ai-summary-placeholder');
+
+                if (tabsContainer) {
+                    tabsContainer.classList.add('is-hidden');
+                }
+                if (panelsContainer) {
+                    panelsContainer.classList.add('is-hidden');
+                }
+                if (placeholder) {
+                    placeholder.textContent = message;
+                    placeholder.classList.remove('is-hidden');
+                }
+            }
 
             function prepareDataForLLM(post_type, post_id) {
                 fetch(`${wpApiShare.root}disciple-tools-ai/v1/dt-ai-summarize`, {
@@ -201,16 +371,12 @@ class Disciple_Tools_AI_Tile
                     button.dataset.defaultLabel = '<?php echo esc_js( $regenerate_label ); ?>';
                     button.textContent = button.dataset.defaultLabel;
 
-                    // Determine action to take based on endpoint response.
                     if ( data?.data?.status === 401 && data?.message ) {
-                        document.querySelector('#dt-ai-summary').innerText = data?.message;
-
-                    } else if ( data?.updated ) {
-                        window.location.reload();
-
-                    } else {
-                        document.querySelector('#dt-ai-summary').innerText = data?.summary;
+                        showAiSummaryMessage( data.message );
+                        return;
                     }
+
+                    window.location.reload();
 
                 })
                 .catch(error => {
@@ -218,7 +384,7 @@ class Disciple_Tools_AI_Tile
                     const button = document.getElementById('dt-ai-summary-button');
                     button.classList.remove('loading');
                     button.textContent = button.dataset.defaultLabel || '<?php echo esc_js( $generate_label ); ?>';
-                    document.querySelector('#dt-ai-summary').innerText = 'Error generating summary. Please try again.';
+                    showAiSummaryMessage( 'Error generating summary. Please try again.' );
                 });
             }
         </script>
