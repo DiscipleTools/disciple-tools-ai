@@ -55,7 +55,7 @@ class Disciple_Tools_AI_Tile
 
         $language_keys = array_keys( $ai_summary_raw ?? [] );
         $available_languages = dt_get_available_languages( true, false, $language_keys );
-        $site_locale = get_locale();
+        $user_locale = get_locale();
 
        
         $ai_summary_entries = [];
@@ -75,11 +75,16 @@ class Disciple_Tools_AI_Tile
         }
 
         $has_ai_summary = !empty( $ai_summary_entries );
-        $active_locale = $site_locale;
+        $active_locale = $user_locale;
         if ( $has_ai_summary ) {
+            $normalized_user_local = explode( '_', $user_locale )[0] ?? $user_locale;
             $entry_codes = array_column( $ai_summary_entries, 'code' );
-            if ( !in_array( $active_locale, $entry_codes, true ) ) {
-                $active_locale = $entry_codes[0] ?? $active_locale;
+            if ( in_array( $normalized_user_local, $entry_codes, true ) ) {
+                $active_locale = $normalized_user_local;
+            } else {
+                if ( !in_array( $active_locale, $entry_codes, true )  ) {
+                    $active_locale = $entry_codes[0] ?? $active_locale;
+                }
             }
         }
         $generate_label = __( 'Generate', 'disciple-tools-ai' );
