@@ -60,7 +60,7 @@ class Disciple_Tools_AI_Tile
         $available_languages = dt_get_available_languages( true, false, $language_keys );
         $user_locale = get_locale();
 
-       
+
         $ai_summary_entries = [];
 
         if ( is_array( $ai_summary_raw ) ) {
@@ -85,7 +85,7 @@ class Disciple_Tools_AI_Tile
             if ( in_array( $normalized_user_local, $entry_codes, true ) ) {
                 $active_locale = $normalized_user_local;
             } else {
-                if ( !in_array( $active_locale, $entry_codes, true )  ) {
+                if ( !in_array( $active_locale, $entry_codes, true ) ) {
                     $active_locale = $entry_codes[0] ?? $active_locale;
                 }
             }

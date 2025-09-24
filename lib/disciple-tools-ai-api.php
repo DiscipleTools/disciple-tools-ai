@@ -300,7 +300,7 @@ Output format:
             return new WP_Error( 'invalid_api_response', 'LLM API did not return a summary.', [ 'status' => 500 ] );
         }
         $summary_array = self::translate_summary( $summary );
-    
+
 
         $post_updated = false;
         if ( isset( $field_settings['ai_summary_array'] ) ) {
