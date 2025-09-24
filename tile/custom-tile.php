@@ -52,6 +52,9 @@ class Disciple_Tools_AI_Tile
         if ( !empty( $ai_summary_raw ) && is_string( $ai_summary_raw ) ) {
             $ai_summary_raw = [ 'en_US' => $ai_summary_raw ];
         }
+        if ( empty( $ai_summary_raw ) ) {
+            $ai_summary_raw = [];
+        }
 
         $language_keys = array_keys( $ai_summary_raw ?? [] );
         $available_languages = dt_get_available_languages( true, false, $language_keys );
