@@ -241,6 +241,33 @@ class Disciple_Tools_AI_Tab_General {
             <table class="widefat striped">
                 <thead>
                 <tr>
+                    <th colspan="2"><span style="font-weight: bold;">Translation Settings</span></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        Google Translate API Key
+                    </td>
+                    <td>
+                        <input type="text" name="google-translate-api-key" placeholder=""
+                               value="<?php echo esc_attr( $connection_settings['google_translate_api_key'] ? '•••••••' : '' ) ?>" style="width: 100%">
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                            <span style="float:right;">
+                                <button class="button" type="submit">Save</button>
+                            </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <br>
+
+            <table class="widefat striped">
+                <thead>
+                <tr>
                     <th colspan="2"><span style="font-weight: bold;">Enabled Features</span></th>
                 </tr>
                 </thead>
@@ -290,7 +317,8 @@ class Disciple_Tools_AI_Tab_General {
                 'llm_model' => '',
                 'transcript_llm_endpoint' => '',
                 'transcript_llm_api_key' => '',
-                'transcript_llm_model' => ''
+                'transcript_llm_model' => '',
+                'google_translate_api_key' => ''
             ] );
 
             $updated_settings = $current_settings;
@@ -317,6 +345,10 @@ class Disciple_Tools_AI_Tab_General {
 
             if ( isset( $post_vars['transcript-llm-model'] ) ) {
                 $updated_settings['transcript_llm_model'] = $post_vars['transcript-llm-model'];
+            }
+
+            if ( isset( $post_vars['google-translate-api-key'] ) && $post_vars['google-translate-api-key'] !== '•••••••' ) {
+                $updated_settings['google_translate_api_key'] = $post_vars['google-translate-api-key'];
             }
 
             // Save all settings as a single array
@@ -415,4 +447,3 @@ class Disciple_Tools_AI_Tab_Second {
         <?php
     }
 }
-
