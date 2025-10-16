@@ -14,9 +14,13 @@ class Disciple_Tools_AI_API {
     public static function get_ai_connection_settings(){
         // Get local settings from single array option
         $settings = get_option( 'DT_AI_connection_settings', [
+            'llm_provider' => '',
+            'llm_provider_chat_path' => '',
             'llm_endpoint' => '',
             'llm_api_key' => '',
             'llm_model' => '',
+            'transcript_llm_provider' => '',
+            'transcript_llm_provider_transcript_path' => '',
             'transcript_llm_endpoint' => '',
             'transcript_llm_api_key' => '',
             'transcript_llm_model' => '',
@@ -37,9 +41,13 @@ class Disciple_Tools_AI_API {
 
         return [
             'enabled' => !empty( $settings['llm_endpoint'] ) && !empty( $settings['llm_api_key'] ) && !empty( $settings['llm_model'] ) && !empty( $settings['transcript_llm_endpoint'] ) && !empty( $settings['transcript_llm_api_key'] ) && !empty( $settings['transcript_llm_model'] ),
+            'llm_provider' => $settings['llm_provider'],
+            'llm_provider_chat_path' => $settings['llm_provider_chat_path'],
             'llm_endpoint' => $settings['llm_endpoint'],
             'llm_api_key' => $settings['llm_api_key'],
             'llm_model' => $settings['llm_model'],
+            'transcript_llm_provider' => $settings['transcript_llm_provider'],
+            'transcript_llm_provider_transcript_path' => $settings['transcript_llm_provider_transcript_path'],
             'transcript_llm_endpoint' => $settings['transcript_llm_endpoint'],
             'transcript_llm_api_key' => $settings['transcript_llm_api_key'],
             'transcript_llm_model' => $settings['transcript_llm_model'],
@@ -81,25 +89,24 @@ class Disciple_Tools_AI_API {
             return new WP_Error( 'missing_ai_configuration', 'LLM connection settings are not configured.', [ 'status' => 500 ] );
         }
 
-        $llm_endpoint = trailingslashit( $connection_settings['llm_endpoint'] ) . 'chat/completions';
+        $ai_providers = apply_filters( 'dt_ai_providers', [] );
+        $llm_endpoint = $connection_settings['llm_endpoint'] . $ai_providers[ $connection_settings['llm_provider'] ]['paths']['chat'][ $connection_settings['llm_provider_chat_path'] ] ?? '/chat/completions';
+
+        $post_data = self::ai_provider_chat_request( $connection_settings, $ai_providers, [
+            'system' => $system_prompt,
+            'user' => $summary
+        ], [
+                'max_tokens' => 300,
+                'temperature' => 0.3,
+                'top_p' => 1
+            ]
+        );
 
         $start_time = microtime( true );
         $response = wp_remote_post( $llm_endpoint, [
             'method' => 'POST',
-            'headers' => [
-                'Authorization' => 'Bearer ' . $connection_settings['llm_api_key'],
-                'Content-Type' => 'application/json',
-            ],
-            'body' => wp_json_encode( [
-                'model' => $connection_settings['llm_model'],
-                'messages' => [
-                    [ 'role' => 'system', 'content' => $system_prompt ],
-                    [ 'role' => 'user', 'content' => $summary ],
-                ],
-                'max_completion_tokens' => 300,
-                'temperature' => 0.3,
-                'top_p' => 1,
-            ] ),
+            'headers' => self::ai_provider_chat_headers( $connection_settings ),
+            'body' => wp_json_encode( $post_data ),
             'timeout' => 60,
         ] );
 
@@ -111,8 +118,8 @@ class Disciple_Tools_AI_API {
             return new WP_Error( 'api_error', 'Failed to connect to LLM API', [ 'status' => 500 ] );
         }
 
-        $body = json_decode( wp_remote_retrieve_body( $response ), true );
-        $summary = $body['choices'][0]['message']['content'] ?? '';
+        $body = self::ai_provider_chat_response( $connection_settings, $ai_providers, json_decode( wp_remote_retrieve_body( $response ), true ), [] );
+        $summary = $body['content'] ?? '';
 
         if ( empty( $summary ) ) {
             return new WP_Error( 'invalid_api_response', 'LLM API did not return a summary.', [ 'status' => 500 ] );
@@ -268,24 +275,23 @@ Output format:
             return new WP_Error( 'missing_ai_configuration', 'LLM connection settings are not configured.', [ 'status' => 500 ] );
         }
 
-        $llm_endpoint = trailingslashit( $connection_settings['llm_endpoint'] ) . 'chat/completions';
+        $ai_providers = apply_filters( 'dt_ai_providers', [] );
+        $llm_endpoint = $connection_settings['llm_endpoint'] . $ai_providers[ $connection_settings['llm_provider'] ]['paths']['chat'][ $connection_settings['llm_provider_chat_path'] ] ?? '/chat/completions';
+
+        $post_data = self::ai_provider_chat_request( $connection_settings, $ai_providers, [
+            'system' => $system_prompt,
+            'user' => $prompt
+        ], [
+                'max_tokens' => 1000,
+                'temperature' => 0.3,
+                'top_p' => 1
+            ]
+        );
 
         $response = wp_remote_post( $llm_endpoint, [
             'method' => 'POST',
-            'headers' => [
-                'Authorization' => 'Bearer ' . $connection_settings['llm_api_key'],
-                'Content-Type' => 'application/json',
-            ],
-            'body' => wp_json_encode( [
-                'model' => $connection_settings['llm_model'],
-                'messages' => [
-                    [ 'role' => 'system', 'content' => $system_prompt ],
-                    [ 'role' => 'user', 'content' => $prompt ],
-                ],
-                'max_completion_tokens' => 1000,
-                'temperature' => 0.3,
-                'top_p' => 1,
-            ] ),
+            'headers' => self::ai_provider_chat_headers( $connection_settings ),
+            'body' => wp_json_encode( $post_data ),
             'timeout' => 60,
         ] );
 
@@ -293,8 +299,8 @@ Output format:
             return new WP_Error( 'api_error', 'Failed to connect to LLM API', [ 'status' => 500 ] );
         }
 
-        $body = json_decode( wp_remote_retrieve_body( $response ), true );
-        $summary = $body['choices'][0]['message']['content'] ?? '';
+        $body = self::ai_provider_chat_response( $connection_settings, $ai_providers, json_decode( wp_remote_retrieve_body( $response ), true ), [] );
+        $summary = $body['content'] ?? '';
 
         if ( empty( $summary ) ) {
             return new WP_Error( 'invalid_api_response', 'LLM API did not return a summary.', [ 'status' => 500 ] );
@@ -711,12 +717,11 @@ Output format:
         }
 
         $connection_settings = self::get_ai_connection_settings();
-        $llm_endpoint_root =$connection_settings['llm_endpoint'];
-        $llm_api_key = $connection_settings['llm_api_key'];
-        $llm_model = $connection_settings['llm_model'];
+        $llm_endpoint_root = $connection_settings['llm_endpoint'];
 
+        $ai_providers = apply_filters( 'dt_ai_providers', [] );
         $dt_ai_field_specs = apply_filters( 'dt_ai_field_specs', [], $post_type, $args );
-        $llm_endpoint = $llm_endpoint_root . '/chat/completions';
+        $llm_endpoint = $llm_endpoint_root . $ai_providers[ $connection_settings['llm_provider'] ]['paths']['chat'][ $connection_settings['llm_provider_chat_path'] ] ?? '/chat/completions';
 
         /**
          * Convert filtered specifications into the desired content shape.
@@ -746,32 +751,24 @@ Output format:
         $attempts = 0;
         $response = [];
 
+        $post_data = self::ai_provider_chat_request( $connection_settings, $ai_providers, [
+            'system' => $llm_model_specs_content,
+            'user' => $parsed_prompt
+        ], [
+                'max_tokens' => 1000,
+                'temperature' => 0.1,
+                'top_p' => 1
+            ]
+        );
+
         while ( $attempts++ < 2 ) {
             try {
 
                 // Dispatch to prediction guard for prompted inference.
                 $inferred = wp_remote_post( $llm_endpoint, [
                     'method' => 'POST',
-                    'headers' => [
-                        'Authorization' => 'Bearer ' . $llm_api_key,
-                        'Content-Type' => 'application/json',
-                    ],
-                    'body' => json_encode( [
-                        'model' => $llm_model,
-                        'messages' => [
-                            [
-                                'role' => 'system',
-                                'content' => $llm_model_specs_content
-                            ],
-                            [
-                                'role' => 'user',
-                                'content' => $parsed_prompt
-                            ],
-                        ],
-                        'max_completion_tokens' => 1000,
-                        'temperature' => 0.1,
-                        'top_p' => 1,
-                    ] ),
+                    'headers' => self::ai_provider_chat_headers( $connection_settings ),
+                    'body' => json_encode( $post_data ),
                     'timeout' => 30,
                 ] );
 
@@ -779,15 +776,15 @@ Output format:
                 if ( !is_wp_error( $inferred ) ) {
 
                     // Ensure a valid JSON structure has been inferred; otherwise, retry!
-                    $inferred_response = json_decode( wp_remote_retrieve_body( $inferred ), true );
+                    $inferred_response = self::ai_provider_chat_response( $connection_settings, $ai_providers, json_decode( wp_remote_retrieve_body( $inferred ), true ), [] );
 
-                    if ( isset( $inferred_response['choices'][0]['message']['content'] ) ) {
+                    if ( isset( $inferred_response['content'] ) ) {
 
                         /**
                          * Attempt to cleanse inferred.....
                          */
 
-                        $cleansed_inferred_response = explode( "\n", trim( $inferred_response['choices'][0]['message']['content'] ) )[0] ?? '';
+                        $cleansed_inferred_response = explode( "\n", trim( $inferred_response['content'] ) )[0] ?? '';
                         $cleansed_inferred_response = str_replace( [ "\n", "\r" ], '', $cleansed_inferred_response );
                         $cleansed_inferred_response = str_replace( [ '\"' ], '"', $cleansed_inferred_response );
 
@@ -2484,13 +2481,9 @@ Output format:
 
         $connection_settings = self::get_ai_connection_settings();
         $llm_endpoint_root = $connection_settings['transcript_llm_endpoint'];
-        $llm_api_key = $connection_settings['transcript_llm_api_key'];
-        $llm_model = $connection_settings['transcript_llm_model'];
 
-        $llm_endpoint = $llm_endpoint_root;
-        if ( !str_contains( $llm_endpoint, 'audio' ) ) {
-            $llm_endpoint = trailingslashit( $llm_endpoint ) . 'audio/transcriptions';
-        }
+        $ai_providers = apply_filters( 'dt_ai_providers', [] );
+        $llm_endpoint = $llm_endpoint_root . $ai_providers[ $connection_settings['transcript_llm_provider'] ]['paths']['transcript'][ $connection_settings['transcript_llm_provider_transcript_path'] ] ?? '/audio/transcriptions';
 
         /**
          * Proceed with transcription execution.
@@ -2507,23 +2500,21 @@ Output format:
             $ch = curl_init();
 
             // Set up the multipart form data
-            $post_data = [
-                'model' => $llm_model,
-                'file' => new CURLFile( $audio_file['tmp_name'], $audio_file['type'], $audio_file['name'] ),
+            $post_data = self::ai_provider_transcribe_request( $connection_settings, $ai_providers, [
+                'file' => new CURLFile( $audio_file['tmp_name'], $audio_file['type'], $audio_file['name'] )
+            ], [
                 'language' => $audio_file['audio_language'] ?? 'en',
                 'temperature' => '0.1',
                 'timestamps_granularities' => '["segment"]',
                 'diarization' => 'true',
                 'response_format' => 'json'
-            ];
+            ] );
 
             curl_setopt_array( $ch, [
                 CURLOPT_URL => $llm_endpoint,
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => $post_data,
-                CURLOPT_HTTPHEADER => [
-                    'Authorization: Bearer ' . $llm_api_key,
-                ],
+                CURLOPT_HTTPHEADER => self::ai_provider_transcribe_headers( $connection_settings ),
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_TIMEOUT => 30,
                 CURLOPT_SSL_VERIFYPEER => true,
@@ -2546,7 +2537,7 @@ Output format:
                     'message' => sprintf( _x( 'HTTP Error %1$d: %2$s', 'HTTP Error', 'disciple-tools-ai' ), $http_code, $transcription_response )
                 ];
             } else {
-                $decoded_response = json_decode( $transcription_response, true );
+                $decoded_response = self::ai_provider_transcribe_response( $connection_settings, $ai_providers, json_decode( $transcription_response, true ), [] );
 
                 if ( !empty( $decoded_response['text'] ) ) {
 
@@ -2598,5 +2589,349 @@ Output format:
             'status' => 'error',
             'message' => sprintf( _x( 'Unable to generate transcription: %s', 'Unable to generate transcription', 'disciple-tools-ai' ), '' )
         ];
+    }
+
+    private static function ai_provider_transcribe_headers( $settings ): array {
+        $headers = [];
+
+        // Ensure required settings are present.
+        if ( isset( $settings['transcript_llm_provider'], $settings['transcript_llm_api_key'] ) ) {
+
+            switch ( $settings['transcript_llm_provider'] ) {
+                case 'predictionguard':
+                case 'openai':
+                    return [
+                        'Authorization: Bearer ' . $settings['transcript_llm_api_key']
+                    ];
+            }
+        }
+
+        return $headers;
+    }
+
+    private static function ai_provider_transcribe_request( $settings, $ai_providers, $content, $args ): array {
+        $body = [];
+
+        // Ensure required settings are present.
+        if ( isset( $settings['transcript_llm_provider'], $settings['transcript_llm_provider_transcript_path'], $settings['transcript_llm_model'], $ai_providers[ $settings['transcript_llm_provider'] ], $ai_providers[ $settings['transcript_llm_provider'] ]['paths']['transcript'][ $settings['transcript_llm_provider_transcript_path'] ] ) ) {
+
+            // AI Provider to be processed.
+            $ai_provider = $ai_providers[ $settings['transcript_llm_provider'] ];
+
+            // Determine AI Provider request body shape to adopt.
+            switch ( $settings['transcript_llm_provider'] ) {
+                case 'predictionguard':
+                    return self::ai_provider_transcribe_request_predictionguard( $ai_provider, $settings, $content, $args );
+                case 'openai':
+                    return self::ai_provider_transcribe_request_openai( $ai_provider, $settings, $content, $args );
+            }
+        }
+
+        return $body;
+    }
+
+    private static function ai_provider_transcribe_request_predictionguard( $ai_provider, $settings, $content, $args ): array {
+        $body = [];
+
+        // Determine AI Provider request body shape to adopt, based on selected path.
+        switch ( $ai_provider['paths']['transcript'][ $settings['transcript_llm_provider_transcript_path'] ] ) {
+            case '/audio/transcriptions':
+                $body = [
+                    'model' => $settings['transcript_llm_model'],
+                    'file' => $content['file'],
+                    'language' => $args['language'] ?? 'en',
+                    'temperature' => $args['temperature'] ?? 0.1,
+                    'timestamps_granularities' => $args['timestamps_granularities'] ?? '["segment"]',
+                    'diarization' => $args['diarization'] ?? 'true',
+                    'response_format' => $args['response_format'] ?? 'json'
+                ];
+                break;
+        }
+
+        return $body;
+    }
+
+    private static function ai_provider_transcribe_request_openai( $ai_provider, $settings, $content, $args ): array {
+        $body = [];
+
+        // Determine AI Provider request body shape to adopt, based on selected path.
+        switch ( $ai_provider['paths']['transcript'][ $settings['transcript_llm_provider_transcript_path'] ] ) {
+            case '/v1/audio/transcriptions':
+                $body = [
+                    'model' => $settings['transcript_llm_model'],
+                    'file' => $content['file'],
+                    'language' => $args['language'] ?? 'en',
+                    'temperature' => $args['temperature'] ?? 0.1,
+                    'timestamps_granularities' => $args['timestamps_granularities'] ?? '["segment"]',
+                    'diarization' => $args['diarization'] ?? 'true',
+                    'response_format' => $args['response_format'] ?? 'json'
+                ];
+                break;
+        }
+
+        return $body;
+    }
+
+    private static function ai_provider_transcribe_response( $settings, $ai_providers, $response, $args ): array {
+
+        // Ensure required settings are present.
+        if ( isset( $settings['transcript_llm_provider'], $settings['transcript_llm_provider_transcript_path'], $settings['transcript_llm_model'], $ai_providers[ $settings['transcript_llm_provider'] ], $ai_providers[ $settings['transcript_llm_provider'] ]['paths']['transcript'][ $settings['transcript_llm_provider_transcript_path'] ] ) ) {
+
+            // AI Provider to be processed.
+            $ai_provider = $ai_providers[ $settings['transcript_llm_provider'] ];
+
+            // Determine AI Provider response shape to extract.
+            switch ( $settings['transcript_llm_provider'] ) {
+                case 'predictionguard':
+                    return self::ai_provider_transcribe_response_predictionguard( $ai_provider, $settings, $response, $args );
+                case 'openai':
+                    return self::ai_provider_transcribe_response_openai( $ai_provider, $settings, $response, $args );
+            }
+        }
+
+        return [];
+    }
+
+    private static function ai_provider_transcribe_response_predictionguard( $ai_provider, $settings, $response, $args ): array {
+
+        // Determine AI Provider response shape to extract, based on selected path.
+        switch ( $ai_provider['paths']['transcript'][ $settings['transcript_llm_provider_transcript_path'] ] ) {
+            case '/audio/transcriptions':
+                if ( !empty( $response['text'] ) ) {
+                    return [
+                        'text' => $response['text']
+                    ];
+                } elseif ( isset( $response['error'] ) ) {
+                    return [
+                        'error' => $response['error']
+                    ];
+                }
+                break;
+        }
+
+        return [];
+    }
+
+    private static function ai_provider_transcribe_response_openai( $ai_provider, $settings, $response, $args ): array {
+
+        // Determine AI Provider response shape to extract, based on selected path.
+        switch ( $ai_provider['paths']['transcript'][ $settings['transcript_llm_provider_transcript_path'] ] ) {
+            case '/v1/audio/transcriptions':
+                if ( !empty( $response['text'] ) || ( !empty( $response['segments'] ) && is_array( $response['segments'] ) ) ) {
+                    return [
+                        'text' => $response['text'] ?? '---',
+                        'segments' => $response['segments'] ?? []
+                    ];
+                } elseif ( isset( $response['error'] ) ) {
+                    return [
+                        'error' => $response['error']
+                    ];
+                }
+                break;
+        }
+
+        return [];
+    }
+
+    private static function ai_provider_chat_headers( $settings ): array {
+        $headers = [];
+
+        // Ensure required settings are present.
+        if ( isset( $settings['llm_provider'], $settings['llm_api_key'] ) ) {
+
+            switch ( $settings['llm_provider'] ) {
+                case 'predictionguard':
+                case 'openai':
+                    return [
+                        'Authorization' => 'Bearer ' . $settings['llm_api_key'],
+                        'Content-Type' => 'application/json',
+                    ];
+                case 'anthropic':
+                    return [
+                        'x-api-key' => $settings['llm_api_key'],
+                        'anthropic-version' => '2023-06-01',
+                        'Content-Type' => 'application/json',
+                    ];
+            }
+        }
+
+        return $headers;
+    }
+
+    private static function ai_provider_chat_request( $settings, $ai_providers, $content, $args ): array {
+        $body = [];
+
+        // Ensure required settings are present.
+        if ( isset( $settings['llm_provider'], $settings['llm_provider_chat_path'], $settings['llm_model'], $ai_providers[ $settings['llm_provider'] ], $ai_providers[ $settings['llm_provider'] ]['paths']['chat'][ $settings['llm_provider_chat_path'] ] ) ) {
+
+            // AI Provider to be processed.
+            $ai_provider = $ai_providers[ $settings['llm_provider'] ];
+
+            // Determine AI Provider request body shape to adopt.
+            switch ( $settings['llm_provider'] ) {
+                case 'predictionguard':
+                    return self::ai_provider_chat_request_predictionguard( $ai_provider, $settings, $content, $args );
+                case 'openai':
+                    return self::ai_provider_chat_request_openai( $ai_provider, $settings, $content, $args );
+                case 'anthropic':
+                    return self::ai_provider_chat_request_anthropic( $ai_provider, $settings, $content, $args );
+            }
+        }
+
+        return $body;
+    }
+
+    private static function ai_provider_chat_request_predictionguard( $ai_provider, $settings, $content, $args ): array {
+        $body = [];
+
+        // Determine AI Provider request body shape to adopt, based on selected path.
+        switch ( $ai_provider['paths']['chat'][ $settings['llm_provider_chat_path'] ] ) {
+            case '/chat/completions':
+                $body = [
+                    'model' => $settings['llm_model'],
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => $content['system']
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $content['user']
+                        ],
+                    ],
+                    'max_completion_tokens' => $args['max_tokens'] ?? 1000,
+                    'temperature' => $args['temperature'] ?? 0.1,
+                    'top_p' => $args['top_p'] ?? 1,
+                ];
+                break;
+        }
+
+        return $body;
+    }
+
+    private static function ai_provider_chat_request_openai( $ai_provider, $settings, $content, $args ): array {
+        $body = [];
+
+        // Determine AI Provider request body shape to adopt, based on selected path.
+        switch ( $ai_provider['paths']['chat'][ $settings['llm_provider_chat_path'] ] ) {
+            case '/v1/responses':
+                $body = [
+                    'model' => $settings['llm_model'],
+                    'instructions' => $content['system'],
+                    'input' => $content['user'],
+                    'max_output_tokens' => $args['max_tokens'] ?? 1000,
+                    'temperature' => $args['temperature'] ?? 0.1,
+                    'top_p' => $args['top_p'] ?? 1,
+                ];
+                break;
+        }
+
+        return $body;
+    }
+
+    private static function ai_provider_chat_request_anthropic( $ai_provider, $settings, $content, $args ): array {
+        $body = [];
+
+        // Determine AI Provider request body shape to adopt, based on selected path.
+        switch ( $ai_provider['paths']['chat'][ $settings['llm_provider_chat_path'] ] ) {
+            case '/v1/messages':
+                $body = [
+                    'model' => $settings['llm_model'],
+                    'system' => $content['system'],
+                    'messages' => [
+                        [
+                            'role' => 'user',
+                            'content' => $content['user']
+                        ],
+                    ],
+                    'max_tokens' => $args['max_tokens'] ?? 1000,
+                    'temperature' => $args['temperature'] ?? 0.1
+                ];
+                break;
+        }
+
+        return $body;
+    }
+
+    private static function ai_provider_chat_response( $settings, $ai_providers, $response, $args ): array {
+
+        // Ensure required settings are present.
+        if ( isset( $settings['llm_provider'], $settings['llm_provider_chat_path'], $settings['llm_model'], $ai_providers[ $settings['llm_provider'] ], $ai_providers[ $settings['llm_provider'] ]['paths']['chat'][ $settings['llm_provider_chat_path'] ] ) ) {
+
+            // AI Provider to be processed.
+            $ai_provider = $ai_providers[ $settings['llm_provider'] ];
+
+            // Determine AI Provider response shape to extract.
+            switch ( $settings['llm_provider'] ) {
+                case 'predictionguard':
+                    return self::ai_provider_chat_response_predictionguard( $ai_provider, $settings, $response, $args );
+                case 'openai':
+                    return self::ai_provider_chat_response_openai( $ai_provider, $settings, $response, $args );
+                case 'anthropic':
+                    return self::ai_provider_chat_response_anthropic( $ai_provider, $settings, $response, $args );
+            }
+        }
+
+        return [];
+    }
+
+    private static function ai_provider_chat_response_predictionguard( $ai_provider, $settings, $response, $args ): array {
+
+        // Determine AI Provider response shape to extract, based on selected path.
+        switch ( $ai_provider['paths']['chat'][ $settings['llm_provider_chat_path'] ] ) {
+            case '/chat/completions':
+                if ( isset( $response['choices'][0]['message']['content'] ) ) {
+                    return [
+                        'content' => $response['choices'][0]['message']['content']
+                    ];
+                } elseif ( isset( $response['error'] ) ) {
+                    return [
+                        'error' => $response['error']
+                    ];
+                }
+                break;
+        }
+
+        return [];
+    }
+
+    private static function ai_provider_chat_response_openai( $ai_provider, $settings, $response, $args ): array {
+
+        // Determine AI Provider response shape to extract, based on selected path.
+        switch ( $ai_provider['paths']['chat'][ $settings['llm_provider_chat_path'] ] ) {
+            case '/v1/responses':
+                if ( isset( $response['output'][0]['content'][0]['text'] ) ) {
+                    return [
+                        'content' => $response['output'][0]['content'][0]['text']
+                    ];
+                } elseif ( isset( $response['error'] ) ) {
+                    return [
+                        'error' => $response['error']
+                    ];
+                }
+                break;
+        }
+
+        return [];
+    }
+
+    private static function ai_provider_chat_response_anthropic( $ai_provider, $settings, $response, $args ): array {
+
+        // Determine AI Provider response shape to extract, based on selected path.
+        switch ( $ai_provider['paths']['chat'][ $settings['llm_provider_chat_path'] ] ) {
+            case '/v1/messages':
+                if ( isset( $response['content'][0]['text'] ) ) {
+                    return [
+                        'content' => $response['content'][0]['text']
+                    ];
+                } elseif ( isset( $response['error'] ) ) {
+                    return [
+                        'error' => $response['error']
+                    ];
+                }
+                break;
+        }
+
+        return [];
     }
 }

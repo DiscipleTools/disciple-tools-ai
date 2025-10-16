@@ -138,6 +138,14 @@ class Disciple_Tools_AI_Tab_General {
 
         $connection_settings = Disciple_Tools_AI_API::get_ai_connection_settings();
 
+        $ai_providers = apply_filters( 'dt_ai_providers', [] );
+
+        $selected_ai_provider = $connection_settings['llm_provider'] ?? 'predictionguard';
+        $selected_ai_provider_chat_path = $connection_settings['llm_provider_chat_path'] ?? 'chat_complete';
+
+        $selected_ai_transcript_provider = $connection_settings['transcript_llm_provider'] ?? 'predictionguard';
+        $selected_ai_transcript_provider_chat_path = $connection_settings['transcript_llm_provider_transcript_path'] ?? 'audio_transcript';
+
         // Fetch default and 3rd-Party AI modules.
         $modules = Disciple_Tools_AI_API::list_modules();
         ?>
@@ -161,10 +169,44 @@ class Disciple_Tools_AI_Tab_General {
                 <tbody>
                     <tr>
                         <td>
+                            Provider
+                        </td>
+                        <td>
+                            <select id="llm-providers" name="llm-providers" style="width:50%; vertical-align: top;">
+                                <option value="">--- Network Reset ---</option>
+                                <?php
+                                foreach ( $ai_providers as $provider_key => $provider ) {
+
+                                    // Exclude providers with no valid paths.
+                                    if ( !empty( $provider['paths']['chat'] ) ) {
+                                        $selected = ($selected_ai_provider == $provider_key) ? 'selected="selected"' : '';
+                                        ?>
+                                        <option value="<?php echo esc_attr( $provider_key ) ?>" <?php echo esc_attr( $selected ) ?>><?php echo esc_attr( $provider['label'] ) ?></option>
+                                        <?php
+                                    }
+                                }
+                                ?>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
                             Endpoint
                         </td>
                         <td>
-                            <input type="text" name="llm-endpoint" placeholder="" value="<?php echo esc_attr( $connection_settings['llm_endpoint'] ) ?>" style="width: 100%">
+                            <input type="text" id="llm-endpoint" name="llm-endpoint" placeholder="" value="<?php echo esc_attr( $connection_settings['llm_endpoint'] ) ?>" style="width: 50%; vertical-align: top;">
+
+                            <select id="llm-provider-chat-paths" name="llm-provider-chat-paths" style="width:48%; vertical-align: top;">
+                                <option value="">--- Network Reset ---</option>
+                                <?php
+                                foreach ( $ai_providers[ $selected_ai_provider ]['paths']['chat'] as $path_key => $path ) {
+                                    $selected = ($selected_ai_provider_chat_path == $path_key) ? 'selected="selected"' : '';
+                                    ?>
+                                    <option value="<?php echo esc_attr( $path_key ) ?>" <?php echo esc_attr( $selected ) ?>><?php echo esc_attr( $path ) ?></option>
+                                    <?php
+                                }
+                                ?>
+                            </select>
                         </td>
                     </tr>
                     <tr>
@@ -181,7 +223,7 @@ class Disciple_Tools_AI_Tab_General {
                             Model
                         </td>
                         <td>
-                            <input type="text" name="llm-model" placeholder="" value="<?php echo esc_attr( $connection_settings['llm_model'] ) ?>" style="width: 100%">
+                            <input type="text" id="llm-model" name="llm-model" placeholder="" value="<?php echo esc_attr( $connection_settings['llm_model'] ) ?>" style="width: 100%">
                         </td>
                     </tr>
                     <tr>
@@ -203,11 +245,45 @@ class Disciple_Tools_AI_Tab_General {
                 </thead>
                 <tbody>
                 <tr>
+                    <td style="width:30%;">
+                        Provider
+                    </td>
+                    <td>
+                        <select id="transcript-llm-providers" name="transcript-llm-providers" style="width:50%; vertical-align: top;">
+                            <option value="">--- Network Reset ---</option>
+                            <?php
+                            foreach ( $ai_providers as $provider_key => $provider ) {
+
+                                // Exclude providers with no valid paths.
+                                if ( !empty( $provider['paths']['transcript'] ) ) {
+                                    $selected = ($selected_ai_transcript_provider == $provider_key) ? 'selected="selected"' : '';
+                                    ?>
+                                    <option value="<?php echo esc_attr( $provider_key ) ?>" <?php echo esc_attr( $selected ) ?>><?php echo esc_attr( $provider['label'] ) ?></option>
+                                    <?php
+                                }
+                            }
+                            ?>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
                     <td>
                         Endpoint
                     </td>
                     <td>
-                        <input type="text" name="transcript-llm-endpoint" placeholder="" value="<?php echo esc_attr( $connection_settings['transcript_llm_endpoint'] ) ?>" style="width: 100%">
+                        <input type="text" id="transcript-llm-endpoint" name="transcript-llm-endpoint" placeholder="" value="<?php echo esc_attr( $connection_settings['transcript_llm_endpoint'] ) ?>" style="width: 50%; vertical-align: top;">
+
+                        <select id="transcript-llm-provider-transcript-paths" name="transcript-llm-provider-transcript-paths" style="width:48%; vertical-align: top;">
+                            <option value="">--- Network Reset ---</option>
+                            <?php
+                            foreach ( $ai_providers[ $selected_ai_transcript_provider ]['paths']['transcript'] as $path_key => $path ) {
+                                $selected = ($selected_ai_transcript_provider_chat_path == $path_key) ? 'selected="selected"' : '';
+                                ?>
+                                <option value="<?php echo esc_attr( $path_key ) ?>" <?php echo esc_attr( $selected ) ?>><?php echo esc_attr( $path ) ?></option>
+                                <?php
+                            }
+                            ?>
+                        </select>
                     </td>
                 </tr>
                 <tr>
@@ -224,7 +300,7 @@ class Disciple_Tools_AI_Tab_General {
                         Model
                     </td>
                     <td>
-                        <input type="text" name="transcript-llm-model" placeholder="" value="<?php echo esc_attr( $connection_settings['transcript_llm_model'] ) ?>" style="width: 100%">
+                        <input type="text" id="transcript-llm-model" name="transcript-llm-model" placeholder="" value="<?php echo esc_attr( $connection_settings['transcript_llm_model'] ) ?>" style="width: 100%">
                     </td>
                 </tr>
                 <tr>
@@ -301,6 +377,131 @@ class Disciple_Tools_AI_Tab_General {
             </table>
         </form>
         <br>
+        <script>
+            jQuery(document).ready(function() {
+                const aiProviders = [<?php echo json_encode( $ai_providers ) ?>][0];
+
+                /**
+                 * Chat Model
+                 */
+
+                // Function to update the chat paths dropdown based on selected provider
+                function updateChatElements(selectedProvider) {
+                    const chatEndpoint = jQuery('#llm-endpoint');
+                    const chatPathsSelect = jQuery('#llm-provider-chat-paths');
+                    const chatModel = jQuery('#llm-model');
+                    const aiProvider = aiProviders[selectedProvider];
+
+                    // Ensure we have a valid ai provider
+                    if ( aiProvider ) {
+
+                        // Get the paths for the selected provider
+                        if ( aiProvider?.paths?.chat ) {
+                            const chatPaths = aiProvider.paths.chat;
+
+                            // Clear existing options
+                            chatPathsSelect.empty();
+
+                            // Add options for each path
+                            jQuery.each(chatPaths, function(pathKey, pathValue) {
+                                chatPathsSelect.append(
+                                    jQuery('<option></option>')
+                                    .attr('value', pathKey)
+                                    .text(pathValue)
+                                );
+                            });
+                        }
+
+                        // Set default endpoint for the selected provider
+                        if ( aiProvider?.endpoints?.chat && aiProvider.endpoints.chat.length > 0 ) {
+                            chatEndpoint.val( aiProvider.endpoints.chat[0] );
+                        }
+
+                        // Set default model for the selected provider
+                        if ( aiProvider?.models?.chat && aiProvider.models.chat.length > 0 ) {
+                            chatModel.val( aiProvider.models.chat[0] );
+                        }
+
+                    } else if ( !selectedProvider ) {
+
+                        // Clear existing options
+                        chatPathsSelect.empty();
+
+                        // Add options for each path
+                        chatPathsSelect.append(
+                            jQuery('<option></option>')
+                            .attr('value', '')
+                            .text('--- Network Reset ---')
+                        );
+                    }
+                }
+
+                // Add change event listener to provider select
+                jQuery('#llm-providers').on('change', function() {
+                    updateChatElements( jQuery(this).val() );
+                });
+
+                /**
+                 * Transcription Model
+                 */
+
+                // Function to update the transcription paths dropdown based on selected provider
+                function updateTranscriptElements(selectedProvider) {
+                    const transcriptEndpoint = jQuery('#transcript-llm-endpoint');
+                    const transcriptPathsSelect = jQuery('#transcript-llm-provider-transcript-paths');
+                    const transcriptModel = jQuery('#transcript-llm-model');
+                    const aiProvider = aiProviders[selectedProvider];
+
+                    // Ensure we have a valid ai provider
+                    if ( aiProvider ) {
+
+                        // Get the paths for the selected provider
+                        if ( aiProvider?.paths?.transcript ) {
+                            const transcriptPaths = aiProvider.paths.transcript;
+
+                            // Clear existing options
+                            transcriptPathsSelect.empty();
+
+                            // Add options for each path
+                            jQuery.each(transcriptPaths, function(pathKey, pathValue) {
+                                transcriptPathsSelect.append(
+                                    jQuery('<option></option>')
+                                    .attr('value', pathKey)
+                                    .text(pathValue)
+                                );
+                            });
+                        }
+
+                        // Set default endpoint for the selected provider
+                        if ( aiProvider?.endpoints?.transcript && aiProvider.endpoints.transcript.length > 0 ) {
+                            transcriptEndpoint.val( aiProvider.endpoints.transcript[0] );
+                        }
+
+                        // Set default model for the selected provider
+                        if ( aiProvider?.models?.transcript && aiProvider.models.transcript.length > 0 ) {
+                            transcriptModel.val( aiProvider.models.transcript[0] );
+                        }
+
+                    } else if ( !selectedProvider ) {
+
+                        // Clear existing options
+                        transcriptPathsSelect.empty();
+
+                        // Add options for each path
+                        transcriptPathsSelect.append(
+                            jQuery('<option></option>')
+                            .attr('value', '')
+                            .text('--- Network Reset ---')
+                        );
+                    }
+                }
+
+                // Add change event listener to provider select
+                jQuery('#transcript-llm-providers').on('change', function() {
+                    updateTranscriptElements( jQuery(this).val() );
+                });
+            });
+        </script>
         <?php
     }
 
@@ -312,9 +513,13 @@ class Disciple_Tools_AI_Tab_General {
 
             // Get current settings to preserve existing values
             $current_settings = get_option( 'DT_AI_connection_settings', [
+                'llm_provider' => 'predictionguard',
+                'llm_provider_chat_path' => 'chat_complete',
                 'llm_endpoint' => '',
                 'llm_api_key' => '',
                 'llm_model' => '',
+                'transcript_llm_provider' => 'predictionguard',
+                'transcript_llm_provider_transcript_path' => 'audio_transcript',
                 'transcript_llm_endpoint' => '',
                 'transcript_llm_api_key' => '',
                 'transcript_llm_model' => '',
@@ -322,6 +527,14 @@ class Disciple_Tools_AI_Tab_General {
             ] );
 
             $updated_settings = $current_settings;
+
+            if ( isset( $post_vars['llm-providers'] ) ) {
+                $updated_settings['llm_provider'] = $post_vars['llm-providers'];
+            }
+
+            if ( isset( $post_vars['llm-provider-chat-paths'] ) ) {
+                $updated_settings['llm_provider_chat_path'] = $post_vars['llm-provider-chat-paths'];
+            }
 
             if ( isset( $post_vars['llm-endpoint'] ) ) {
                 $updated_settings['llm_endpoint'] = $post_vars['llm-endpoint'];
@@ -333,6 +546,14 @@ class Disciple_Tools_AI_Tab_General {
 
             if ( isset( $post_vars['llm-model'] ) ) {
                 $updated_settings['llm_model'] = $post_vars['llm-model'];
+            }
+
+            if ( isset( $post_vars['transcript-llm-providers'] ) ) {
+                $updated_settings['transcript_llm_provider'] = $post_vars['transcript-llm-providers'];
+            }
+
+            if ( isset( $post_vars['transcript-llm-provider-transcript-paths'] ) ) {
+                $updated_settings['transcript_llm_provider_transcript_path'] = $post_vars['transcript-llm-provider-transcript-paths'];
             }
 
             if ( isset( $post_vars['transcript-llm-endpoint'] ) ) {
