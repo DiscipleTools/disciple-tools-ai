@@ -96,10 +96,10 @@ class Disciple_Tools_AI_API {
             'system' => $system_prompt,
             'user' => $summary
         ], [
-                'max_tokens' => 300,
-                'temperature' => 0.3,
-                'top_p' => 1
-            ]
+            'max_tokens' => 300,
+            'temperature' => 0.3,
+            'top_p' => 1
+        ]
         );
 
         $start_time = microtime( true );
@@ -282,10 +282,10 @@ Output format:
             'system' => $system_prompt,
             'user' => $prompt
         ], [
-                'max_tokens' => 1000,
-                'temperature' => 0.3,
-                'top_p' => 1
-            ]
+            'max_tokens' => 1000,
+            'temperature' => 0.3,
+            'top_p' => 1
+        ]
         );
 
         $response = wp_remote_post( $llm_endpoint, [
@@ -755,10 +755,10 @@ Output format:
             'system' => $llm_model_specs_content,
             'user' => $parsed_prompt
         ], [
-                'max_tokens' => 1000,
-                'temperature' => 0.1,
-                'top_p' => 1
-            ]
+            'max_tokens' => 1000,
+            'temperature' => 0.1,
+            'top_p' => 1
+        ]
         );
 
         while ( $attempts++ < 2 ) {

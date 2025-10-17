@@ -179,7 +179,7 @@ class Disciple_Tools_AI_Tab_General {
 
                                     // Exclude providers with no valid paths.
                                     if ( !empty( $provider['paths']['chat'] ) ) {
-                                        $selected = ($selected_ai_provider == $provider_key) ? 'selected="selected"' : '';
+                                        $selected = ( $selected_ai_provider == $provider_key ) ? 'selected="selected"' : '';
                                         ?>
                                         <option value="<?php echo esc_attr( $provider_key ) ?>" <?php echo esc_attr( $selected ) ?>><?php echo esc_attr( $provider['label'] ) ?></option>
                                         <?php
@@ -200,7 +200,7 @@ class Disciple_Tools_AI_Tab_General {
                                 <option value="">--- Network Reset ---</option>
                                 <?php
                                 foreach ( $ai_providers[ $selected_ai_provider ]['paths']['chat'] as $path_key => $path ) {
-                                    $selected = ($selected_ai_provider_chat_path == $path_key) ? 'selected="selected"' : '';
+                                    $selected = ( $selected_ai_provider_chat_path == $path_key ) ? 'selected="selected"' : '';
                                     ?>
                                     <option value="<?php echo esc_attr( $path_key ) ?>" <?php echo esc_attr( $selected ) ?>><?php echo esc_attr( $path ) ?></option>
                                     <?php
@@ -214,7 +214,7 @@ class Disciple_Tools_AI_Tab_General {
                             API Key
                         </td>
                         <td>
-                            <input type="text" name="llm-api-key" placeholder=""
+                            <input type="text" id="llm-api-key" name="llm-api-key" placeholder=""
                                    value="<?php echo esc_attr( $connection_settings['llm_api_key'] ? '•••••••' : '' ) ?>" style="width: 100%">
                         </td>
                     </tr>
@@ -256,7 +256,7 @@ class Disciple_Tools_AI_Tab_General {
 
                                 // Exclude providers with no valid paths.
                                 if ( !empty( $provider['paths']['transcript'] ) ) {
-                                    $selected = ($selected_ai_transcript_provider == $provider_key) ? 'selected="selected"' : '';
+                                    $selected = ( $selected_ai_transcript_provider == $provider_key ) ? 'selected="selected"' : '';
                                     ?>
                                     <option value="<?php echo esc_attr( $provider_key ) ?>" <?php echo esc_attr( $selected ) ?>><?php echo esc_attr( $provider['label'] ) ?></option>
                                     <?php
@@ -277,7 +277,7 @@ class Disciple_Tools_AI_Tab_General {
                             <option value="">--- Network Reset ---</option>
                             <?php
                             foreach ( $ai_providers[ $selected_ai_transcript_provider ]['paths']['transcript'] as $path_key => $path ) {
-                                $selected = ($selected_ai_transcript_provider_chat_path == $path_key) ? 'selected="selected"' : '';
+                                $selected = ( $selected_ai_transcript_provider_chat_path == $path_key ) ? 'selected="selected"' : '';
                                 ?>
                                 <option value="<?php echo esc_attr( $path_key ) ?>" <?php echo esc_attr( $selected ) ?>><?php echo esc_attr( $path ) ?></option>
                                 <?php
@@ -291,7 +291,7 @@ class Disciple_Tools_AI_Tab_General {
                         API Key
                     </td>
                     <td>
-                        <input type="text" name="transcript-llm-api-key" placeholder=""
+                        <input type="text" id="transcript-llm-api-key" name="transcript-llm-api-key" placeholder=""
                                value="<?php echo esc_attr( $connection_settings['transcript_llm_api_key'] ? '•••••••' : '' ) ?>" style="width: 100%">
                     </td>
                 </tr>
@@ -389,6 +389,7 @@ class Disciple_Tools_AI_Tab_General {
                 function updateChatElements(selectedProvider) {
                     const chatEndpoint = jQuery('#llm-endpoint');
                     const chatPathsSelect = jQuery('#llm-provider-chat-paths');
+                    const chatApiKey = jQuery('#llm-api-key');
                     const chatModel = jQuery('#llm-model');
                     const aiProvider = aiProviders[selectedProvider];
 
@@ -433,6 +434,11 @@ class Disciple_Tools_AI_Tab_General {
                             .attr('value', '')
                             .text('--- Network Reset ---')
                         );
+
+                        // Reset remaining fields, to force the pull down of default network settings.
+                        chatEndpoint.val('');
+                        chatApiKey.val('');
+                        chatModel.val('');
                     }
                 }
 
@@ -449,6 +455,7 @@ class Disciple_Tools_AI_Tab_General {
                 function updateTranscriptElements(selectedProvider) {
                     const transcriptEndpoint = jQuery('#transcript-llm-endpoint');
                     const transcriptPathsSelect = jQuery('#transcript-llm-provider-transcript-paths');
+                    const transcriptApiKey = jQuery('#transcript-llm-api-key');
                     const transcriptModel = jQuery('#transcript-llm-model');
                     const aiProvider = aiProviders[selectedProvider];
 
@@ -493,6 +500,11 @@ class Disciple_Tools_AI_Tab_General {
                             .attr('value', '')
                             .text('--- Network Reset ---')
                         );
+
+                        // Reset remaining fields, to force the pull down of default network settings.
+                        transcriptEndpoint.val('');
+                        transcriptApiKey.val('');
+                        transcriptModel.val('');
                     }
                 }
 
