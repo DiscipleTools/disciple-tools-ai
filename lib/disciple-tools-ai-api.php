@@ -99,8 +99,7 @@ class Disciple_Tools_AI_API {
             'max_tokens' => 300,
             'temperature' => 0.3,
             'top_p' => 1
-        ]
-        );
+        ] );
 
         $start_time = microtime( true );
         $response = wp_remote_post( $llm_endpoint, [
@@ -285,8 +284,7 @@ Output format:
             'max_tokens' => 1000,
             'temperature' => 0.3,
             'top_p' => 1
-        ]
-        );
+        ] );
 
         $response = wp_remote_post( $llm_endpoint, [
             'method' => 'POST',
@@ -758,8 +756,7 @@ Output format:
             'max_tokens' => 1000,
             'temperature' => 0.1,
             'top_p' => 1
-        ]
-        );
+        ] );
 
         while ( $attempts++ < 2 ) {
             try {
