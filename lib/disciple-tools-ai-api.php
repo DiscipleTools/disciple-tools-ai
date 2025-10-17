@@ -95,7 +95,7 @@ class Disciple_Tools_AI_API {
         $post_data = self::ai_provider_chat_request( $connection_settings, $ai_providers, [
             'system' => $system_prompt,
             'user' => $summary
-        ], [
+            ], [
             'max_tokens' => 300,
             'temperature' => 0.3,
             'top_p' => 1
@@ -280,7 +280,7 @@ Output format:
         $post_data = self::ai_provider_chat_request( $connection_settings, $ai_providers, [
             'system' => $system_prompt,
             'user' => $prompt
-        ], [
+            ], [
             'max_tokens' => 1000,
             'temperature' => 0.3,
             'top_p' => 1
@@ -752,7 +752,7 @@ Output format:
         $post_data = self::ai_provider_chat_request( $connection_settings, $ai_providers, [
             'system' => $llm_model_specs_content,
             'user' => $parsed_prompt
-        ], [
+            ], [
             'max_tokens' => 1000,
             'temperature' => 0.1,
             'top_p' => 1
@@ -2499,7 +2499,7 @@ Output format:
             // Set up the multipart form data
             $post_data = self::ai_provider_transcribe_request( $connection_settings, $ai_providers, [
                 'file' => new CURLFile( $audio_file['tmp_name'], $audio_file['type'], $audio_file['name'] )
-            ], [
+                ], [
                 'language' => $audio_file['audio_language'] ?? 'en',
                 'temperature' => '0.1',
                 'timestamps_granularities' => '["segment"]',
