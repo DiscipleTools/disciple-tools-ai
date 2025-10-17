@@ -8,43 +8,18 @@ This plugin integrates AI capabilities into Disciple.Tools to help disciple make
 
 ## Features
 
-### AI-Powered Search and Filtering
-- **Smart List Filtering**: Use natural language prompts to filter contacts, groups, and other records
-- **Intelligent Field Recognition**: AI automatically identifies relevant fields from your search queries
-- **Multiple Option Resolution**: When AI finds multiple matches for locations, users, or posts, it prompts for clarification
-- **(in progress) PII Protection**: Automatically detects and obfuscates personally identifiable information before sending to AI models
-
-### Magic Link Applications
-- **AI List App**: A standalone magic link application with AI-powered search and filtering capabilities
-- **User Apps**: Pre-configured user applications for field workers and team members
-- **Login Apps**: Secure access applications with AI functionality
-
-### Data Visualization
-- **Dynamic AI Maps**: AI-generated maps in the metrics section that can visualize filtered data geographically
-- **Custom Charts**: Integration with the metrics system for AI-enhanced data visualization
+- **AI-Powered Search and Filtering**: Use natural language prompts to filter contacts, groups, and other records
+- **Magic Link Applications**: Standalone magic link applications with AI-powered search and filtering capabilities
+- **Dynamic AI Maps**: AI-generated maps in the metrics section that visualize filtered data geographically
+- **Voice Message Transcription**: Record voice messages that are automatically transcribed and used to update contact records
 
 ### Future features:
 
-#### Content Summarization
-- **Record Summaries**: AI-powered summarization of contact records, activities, and comments
-- **Activity Analysis**: Intelligent analysis of user interactions and record updates
-- **Custom Tiles**: AI summary tiles integrated into contact and record detail pages
-- **(in progress) PII Protection**: Automatically detects and obfuscates personally identifiable information before sending to AI models
-
-#### Magic link Voice instructions to update records
-- **Voice-to-Text Transcription**: Record voice commands that are automatically transcribed using AI speech recognition
-- **Natural Language Processing**: Speak naturally about meetings and contact updates (e.g., "I met with John yesterday and we discussed his baptism")
-- **Intelligent Contact Matching**: AI identifies which contact you're referring to from voice commands
-- **Automatic Field Updates**: Voice commands automatically update relevant contact fields like faith status, milestones, and communication details
-- **Meeting Notes Integration**: Spoken meeting details are automatically added as comments to contact records
-- **Hands-Free Operation**: Perfect for field workers who need to update records while traveling or in situations where typing is difficult
-
-
+- **Content Summarization**: AI-powered summarization of contact records, activities, and comments
+- **PII Protection**: Automatically detects and obfuscates personally identifiable information before sending to AI models
 
 ### REST API Integration
-- Endpoints for AI summarization (`/dt-ai-summarize`)
-- Endpoints for creating AI-powered filters (`/dt-ai-create-filter`)
-- Secure permission-based access to AI features
+- **AI Endpoints**: REST API endpoints for AI summarization and filter creation with secure permission-based access
 
 ## Requirements
 
@@ -92,10 +67,7 @@ The plugin includes several configurable modules:
 
 ## Privacy and Security (in progress)
 
-- **PII Detection**: Automatically identifies and protects personal information
-- **Data Obfuscation**: Sensitive data is masked before being sent to AI providers
-- **Permission Controls**: Fine-grained access controls for AI features
-- **Secure API**: All endpoints require proper authentication and permissions
+- **Data Protection**: Automatic PII detection, data obfuscation, permission controls, and secure API authentication
 
 ## Contribution
 
