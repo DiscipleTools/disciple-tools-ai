@@ -299,10 +299,10 @@ Output format:
         if ( empty( $summary ) ) {
             return new WP_Error( 'invalid_api_response', 'LLM API did not return a summary.', [ 'status' => 500 ] );
         }
-        $summary_array = self::translate_summary( $summary );
-        if ( is_wp_error( $summary_array ) ) {
-            $summary_array = [ 'en_US' => $summary ];
-        }
+//        $summary_array = self::translate_summary( $summary );
+//        if ( is_wp_error( $summary_array ) ) {
+//        }
+        $summary_array = [ 'en_US' => $summary ];
 
 
         $post_updated = false;
