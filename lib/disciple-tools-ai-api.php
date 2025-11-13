@@ -2104,6 +2104,18 @@ Output format:
         $ai_modules = apply_filters( 'dt_ai_modules', $defaults );
         $module_enabled_states = get_option( 'dt_ai_modules', [] );
 
+        // If multisite, check for network defaults for modules without site-specific settings
+        if ( is_multisite() && empty( $module_enabled_states ) ) {
+            $network_module_states = get_site_option( 'DT_AI_network_modules', [] );
+
+            // For each module, use network default if site setting is not explicitly set
+            foreach ( $ai_modules as $module_id => $module ) {
+                if ( !isset( $module_enabled_states[$module_id] ) && isset( $network_module_states[$module_id] ) ) {
+                    $module_enabled_states[$module_id] = $network_module_states[$module_id];
+                }
+            }
+        }
+
         // Remove modules not present.
         foreach ( $module_enabled_states as $key => $enabled_state ) {
             if ( !isset( $ai_modules[$key] ) ) {
