@@ -24,6 +24,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Load network API that works independently of theme
+ * This is needed for Network Admin functionality
+ */
+require_once( plugin_dir_path( __FILE__ ) . 'lib/ai-network-api.php' );
+
+/**
  * Gets the instance of the `Disciple_Tools_AI` class.
  *
  * @since  0.1
