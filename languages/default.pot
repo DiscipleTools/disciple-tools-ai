@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Disciple.Tools - AI plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Disciple.Tools - AI 0.6.0\n"
+"Project-Id-Version: Disciple.Tools - AI 0.6.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/disciple-tools-ai\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-11-13T14:42:44+00:00\n"
+"POT-Creation-Date: 2025-11-17T11:46:31+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: disciple-tools-ai\n"
@@ -103,21 +103,21 @@ msgctxt "Unable to process prompt"
 msgid "Unable to process prompt: %s"
 msgstr ""
 
-#: lib/disciple-tools-ai-api.php:2529
+#: lib/disciple-tools-ai-api.php:2541
 #, php-format
 msgctxt "cURL Error"
 msgid "cURL Error: %s"
 msgstr ""
 
-#: lib/disciple-tools-ai-api.php:2534
+#: lib/disciple-tools-ai-api.php:2546
 #, php-format
 msgctxt "HTTP Error"
 msgid "HTTP Error %1$d: %2$s"
 msgstr ""
 
-#: lib/disciple-tools-ai-api.php:2574
-#: lib/disciple-tools-ai-api.php:2581
-#: lib/disciple-tools-ai-api.php:2587
+#: lib/disciple-tools-ai-api.php:2586
+#: lib/disciple-tools-ai-api.php:2593
+#: lib/disciple-tools-ai-api.php:2599
 #, php-format
 msgctxt "Unable to generate transcription"
 msgid "Unable to generate transcription: %s"
