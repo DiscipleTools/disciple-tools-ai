@@ -34,7 +34,7 @@ class DT_AI_Network_API {
             $network_settings = get_site_option( 'DT_AI_connection_settings', [] );
 
             foreach ( $settings as $key => $value ) {
-                if ( empty( $value ) && isset( $network_settings[$key] ) && !empty( $network_settings[$key] ) ) {
+                if ( empty( $value ) && !empty( $network_settings[$key] ) ) {
                     $settings[$key] = $network_settings[$key];
                 }
             }
@@ -125,10 +125,8 @@ class DT_AI_Network_API {
         return $ai_modules;
     }
 
-    public static function get_ai_providers( $ai_providers = [] ): array {
-        if ( !is_array( $ai_providers ) ) {
-            $ai_providers = [];
-        }
+    public static function get_ai_providers(): array {
+        $ai_providers = [];
 
         if ( !isset( $ai_providers['predictionguard'] ) ) {
             $ai_providers['predictionguard'] = [
@@ -214,7 +212,6 @@ class DT_AI_Network_API {
             ];
         }
 
-        // Apply filter to allow other plugins to add providers
         return apply_filters( 'dt_ai_providers', $ai_providers );
     }
 }

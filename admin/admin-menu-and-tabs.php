@@ -138,7 +138,7 @@ class Disciple_Tools_AI_Tab_General {
 
         $connection_settings = Disciple_Tools_AI_API::get_ai_connection_settings();
 
-        $ai_providers = apply_filters( 'dt_ai_providers', [] );
+        $ai_providers = DT_AI_Network_API::get_ai_providers();
 
         $selected_ai_provider = $connection_settings['llm_provider'] ?? 'predictionguard';
         $selected_ai_provider_chat_path = $connection_settings['llm_provider_chat_path'] ?? 'chat_complete';

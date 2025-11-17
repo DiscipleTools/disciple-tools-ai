@@ -146,9 +146,3 @@ function dt_upload_audio_comment_languages() {
         <?php
     }
 }
-
-add_filter( 'dt_ai_providers', 'dt_ai_providers', 5, 1 );
-function dt_ai_providers( $ai_providers ): array {
-    // Delegate to network API for consistency
-    return DT_AI_Network_API::get_ai_providers( $ai_providers );
-}

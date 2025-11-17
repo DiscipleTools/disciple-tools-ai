@@ -50,7 +50,7 @@ class Disciple_Tools_AI_API {
             return new WP_Error( 'missing_ai_configuration', 'LLM connection settings are not configured.', [ 'status' => 500 ] );
         }
 
-        $ai_providers = apply_filters( 'dt_ai_providers', [] );
+        $ai_providers = DT_AI_Network_API::get_ai_providers();
         $llm_endpoint = $connection_settings['llm_endpoint'] . $ai_providers[ $connection_settings['llm_provider'] ]['paths']['chat'][ $connection_settings['llm_provider_chat_path'] ] ?? '/chat/completions';
 
         $post_data = self::ai_provider_chat_request( $connection_settings, $ai_providers, [
@@ -235,7 +235,7 @@ Output format:
             return new WP_Error( 'missing_ai_configuration', 'LLM connection settings are not configured.', [ 'status' => 500 ] );
         }
 
-        $ai_providers = apply_filters( 'dt_ai_providers', [] );
+        $ai_providers = DT_AI_Network_API::get_ai_providers();
         $llm_endpoint = $connection_settings['llm_endpoint'] . $ai_providers[ $connection_settings['llm_provider'] ]['paths']['chat'][ $connection_settings['llm_provider_chat_path'] ] ?? '/chat/completions';
 
         $post_data = self::ai_provider_chat_request( $connection_settings, $ai_providers, [
@@ -678,7 +678,7 @@ Output format:
         $connection_settings = self::get_ai_connection_settings();
         $llm_endpoint_root = $connection_settings['llm_endpoint'];
 
-        $ai_providers = apply_filters( 'dt_ai_providers', [] );
+        $ai_providers = DT_AI_Network_API::get_ai_providers();
         $dt_ai_field_specs = apply_filters( 'dt_ai_field_specs', [], $post_type, $args );
         $llm_endpoint = $llm_endpoint_root . $ai_providers[ $connection_settings['llm_provider'] ]['paths']['chat'][ $connection_settings['llm_provider_chat_path'] ] ?? '/chat/completions';
 
@@ -2424,7 +2424,7 @@ Output format:
         $connection_settings = self::get_ai_connection_settings();
         $llm_endpoint_root = $connection_settings['transcript_llm_endpoint'];
 
-        $ai_providers = apply_filters( 'dt_ai_providers', [] );
+        $ai_providers = DT_AI_Network_API::get_ai_providers();
         $llm_endpoint = $llm_endpoint_root . $ai_providers[ $connection_settings['transcript_llm_provider'] ]['paths']['transcript'][ $connection_settings['transcript_llm_provider_transcript_path'] ] ?? '/audio/transcriptions';
 
         /**
