@@ -124,4 +124,97 @@ class DT_AI_Network_API {
 
         return $ai_modules;
     }
+
+    public static function get_ai_providers( $ai_providers = [] ): array {
+        if ( !is_array( $ai_providers ) ) {
+            $ai_providers = [];
+        }
+
+        if ( !isset( $ai_providers['predictionguard'] ) ) {
+            $ai_providers['predictionguard'] = [
+                'label' => 'Prediction Guard',
+                'endpoints' => [ // First endpoint in array, is classed as default.
+                    'chat' => [
+                        'https://api.predictionguard.com'
+                    ],
+                    'transcript' => [
+                        'https://api.predictionguard.com'
+                    ]
+                ],
+                'paths' => [ // New paths to be added, as more path-endpoints are supported.
+                    'chat' => [
+                        'chat_complete' => '/chat/completions'
+                    ],
+                    'transcript' => [
+                        'audio_transcript' => '/audio/transcriptions'
+                    ]
+                ],
+                'models' => [ // First model in array, is classed as default.
+                    'chat' => [
+                        'Hermes-3-Llama-3.1-70B'
+                    ],
+                    'transcript' => [
+                        'base'
+                    ]
+                ]
+            ];
+        }
+
+        if ( !isset( $ai_providers['openai'] ) ) {
+            $ai_providers['openai'] = [
+                'label' => 'OpenAI',
+                'endpoints' => [
+                    'chat' => [
+                        'https://api.openai.com'
+                    ],
+                    'transcript' => [
+                        'https://api.openai.com'
+                    ]
+                ],
+                'paths' => [
+                    'chat' => [
+                        'responses' => '/v1/responses'
+                    ],
+                    'transcript' => [
+                        'audio_transcript' => '/v1/audio/transcriptions'
+                    ]
+                ],
+                'models' => [
+                    'chat' => [
+                        'gpt-4.1'
+                    ],
+                    'transcript' => [
+                        'gpt-4o-transcribe'
+                    ]
+                ]
+            ];
+        }
+
+        if ( !isset( $ai_providers['anthropic'] ) ) {
+            $ai_providers['anthropic'] = [
+                'label' => 'Anthropic',
+                'endpoints' => [
+                    'chat' => [
+                        'https://api.anthropic.com'
+                    ],
+                    'transcript' => []
+                ],
+                'paths' => [
+                    'chat' => [
+                        'messages' => '/v1/messages'
+                    ],
+                    'transcript' => []
+                ],
+                'models' => [
+                    'chat' => [
+                        'claude-sonnet-4-5-20250929'
+                    ],
+                    'transcript' => []
+                ]
+            ];
+        }
+
+        // Apply filter to allow other plugins to add providers
+        return apply_filters( 'dt_ai_providers', $ai_providers );
+    }
 }
