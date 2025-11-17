@@ -5,7 +5,7 @@
  * Description: Disciple.Tools - AI is a plugin that adds AI capabilities to Disciple.Tools
  * Text Domain: disciple-tools-ai
  * Domain Path: /languages
- * Version:  0.6.1
+ * Version:  0.6.2
  * Author URI: https://github.com/DiscipleTools
  * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-ai
  * Requires at least: 4.7.0
