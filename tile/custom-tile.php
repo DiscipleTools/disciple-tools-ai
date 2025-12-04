@@ -16,6 +16,7 @@ class Disciple_Tools_AI_Tile
         add_action( 'dt_record_top_above_details', [ $this, 'dt_record_top_above_details' ], 10, 2 );
         add_action( 'archive_template_action_bar_buttons', [ $this, 'archive_template_action_bar_buttons' ], 5, 1 );
         add_action( 'archive_template_mobile_action_bar_buttons', [ $this, 'archive_template_mobile_action_bar_buttons' ], 5, 1 );
+        add_filter( 'dt_list_posts_custom_fields', [ $this, 'dt_list_posts_custom_fields' ], 10, 2 );
     }
 
     public function dt_site_scripts(): void {
@@ -34,6 +35,49 @@ class Disciple_Tools_AI_Tile
             //'hidden' => true, // Hide from normal field display since we show it in custom section
         ];
         return $fields;
+    }
+
+    /**
+     * Transform ai_summary_array into displayable text based on user locale for list display
+     * @param array $data
+     * @param string $post_type
+     * @return array
+     */
+    public function dt_list_posts_custom_fields( array $data, string $post_type ): array {
+        if ( empty( $data['posts'] ) ) {
+            return $data;
+        }
+
+        $user_locale = get_user_locale();
+        $normalized_user_locale = explode( '_', $user_locale )[0] ?? $user_locale;
+
+        foreach ( $data['posts'] as &$post ) {
+            $ai_summary_array = $post['ai_summary_array'] ?? [];
+
+            if ( empty( $ai_summary_array ) ) {
+                continue;
+            }
+
+            if ( is_string( $ai_summary_array ) ) {
+                $post['ai_summary_array'] = $ai_summary_array;
+                continue;
+            }
+
+            $summary_text = '';
+            $available_codes = array_keys( $ai_summary_array );
+
+            if ( in_array( $normalized_user_locale, $available_codes, true ) ) {
+                $summary_text = $ai_summary_array[ $normalized_user_locale ];
+            } elseif ( in_array( $user_locale, $available_codes, true ) ) {
+                $summary_text = $ai_summary_array[ $user_locale ];
+            } elseif ( !empty( $available_codes ) ) {
+                $summary_text = $ai_summary_array[ $available_codes[0] ];
+            }
+
+            $post['ai_summary_array'] = $summary_text;
+        }
+
+        return $data;
     }
 
     /**
