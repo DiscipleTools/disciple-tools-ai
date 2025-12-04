@@ -4,28 +4,48 @@
 
 # Disciple.Tools - AI
 
-This plugin integrates AI capabilities into Disciple.Tools to help disciple makers in their work by providing intelligent search, filtering, summarization, and mapping features.
+Use AI to make working in Disciple.Tools awesome. Use natural language filtering and the power of AI summarization and transcription. 
 
-## Features
+# Features
 
-- **AI-Powered Search and Filtering**: Use natural language prompts to filter contacts, groups, and other records
-- **Magic Link Applications**: Standalone magic link applications with AI-powered search and filtering capabilities
-- **Dynamic AI Maps**: AI-generated maps in the metrics section that visualize filtered data geographically
-- **Voice Message Transcription**: Record voice messages that are automatically transcribed and used to update contact records
+## AI-Powered Search and Filtering
 
-### Future features:
+Use natural language prompts to filter contacts, groups, and other records.
 
-- **Content Summarization**: AI-powered summarization of contact records, activities, and comments
-- **PII Protection**: Automatically detects and obfuscates personally identifiable information before sending to AI models
+https://github.com/user-attachments/assets/79f1f754-7165-407c-a303-5b67d533abd4
 
-### REST API Integration
-- **AI Endpoints**: REST API endpoints for AI summarization and filter creation with secure permission-based access
+## Voice Message Transcription
 
-## Requirements
+Record voice messages that are automatically transcribed and used to update contact records.
 
-- Disciple.Tools Theme installed on a WordPress Server
-- Compatible LLM API endpoint (OpenAI-compatible)
-- Valid API key for your chosen LLM provider
+https://github.com/user-attachments/assets/27079d48-b7cc-4c2a-bb5c-27dfb35debd0
+
+## AI Summaries
+
+Summarize conversations and activity on contact and group records.
+
+https://github.com/user-attachments/assets/9dd52f95-a4ec-42cc-b200-83a9f1c01b09
+
+On see the summaries in the list view:
+
+<img width="1195" height="545" alt="image" src="https://github.com/user-attachments/assets/76874bc5-74a0-4997-9690-9ee0e892c61e" />
+
+
+## Magic Link List
+
+Standalone magic link applications with AI-powered search and filtering capabilities
+
+
+https://github.com/user-attachments/assets/1130a367-29ed-4fd1-801e-b39b3c34e9d0
+
+
+## Dynamic AI Maps
+
+AI-generated maps in the metrics section that visualize filtered data geographically
+
+https://github.com/user-attachments/assets/e4574c10-94c9-46fb-bc3a-8112205ef660
+
+
 
 ## Configuration
 
@@ -42,32 +62,6 @@ The plugin includes several configurable modules:
 - **List Search and Filter**: Enable AI search and filter for lists
 - **List User App (Magic Link)**: A user app with AI search and filter integrated
 - **Metrics Dynamic Maps**: AI-powered maps in the metrics section
-
-## Installing
-
-- Install as a standard Disciple.Tools/WordPress plugin in the system Admin/Plugins area
-- Requires the user role of Administrator for initial configuration
-- Configure LLM settings in Extensions (D.T) > Disciple Tools AI
-
-## Usage Examples
-
-### Natural Language Filtering
-- "Show me all contacts in Kenya who are baptized"
-- "Find active groups started this year"
-- "List contacts assigned to John with recent activity"
-
-### Geographic Queries
-- "Contacts in Nairobi with faith milestone of baptized"
-- "Groups meeting in urban areas"
-
-### Status and Timeline Queries
-- "New contacts from last month"
-- "Inactive groups that need follow-up"
-- "Contacts baptized this year"
-
-## Privacy and Security (in progress)
-
-- **Data Protection**: Automatic PII detection, data obfuscation, permission controls, and secure API authentication
 
 ## Contribution
 
