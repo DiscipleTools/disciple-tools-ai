@@ -149,6 +149,7 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
         $allowed_js[] = 'ml-ai-list-app-js';
 
         if ( class_exists( 'Disciple_Tools_Bulk_Magic_Link_Sender_API' ) ) {
+            $allowed_js[] = 'toastify-js';
             $allowed_js[] = Disciple_Tools_Bulk_Magic_Link_Sender_API::get_magic_link_utilities_script_handle();
         }
 
@@ -159,6 +160,7 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
         $allowed_css[] = 'material-font-icons-css';
         $allowed_css[] = 'dt-web-components-css';
         $allowed_css[] = 'ml-ai-list-app-css';
+        $allowed_css[] = 'toastify-js-css';
 
         return $allowed_css;
     }
