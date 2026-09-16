@@ -319,9 +319,10 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
 
                     <dt-tile id="all-fields" open>
                         <?php
-                        // ML Plugin required.
-                        if ( class_exists( 'Disciple_Tools_Magic_Links_Helper' ) ) {
+                        // Theme field renderer required.
+                        if ( function_exists( 'render_field_for_display' ) ) {
                             $post_field_settings = DT_Posts::get_post_field_settings( $this->default_post_type );
+                            $empty_post = [ 'post_type' => $this->default_post_type ];
                             foreach ( $post_field_settings as $field_key => $field ) {
                                 if ( in_array( $field_key, $this->default_fields ) ) {
 
@@ -329,7 +330,7 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
                                     $post_field_settings[$field_key]['custom_display'] = false;
                                     $post_field_settings[$field_key]['readonly'] = false;
 
-                                    Disciple_Tools_Magic_Links_Helper::render_field_for_display( $field_key, $post_field_settings, [] );
+                                    render_field_for_display( $field_key, $post_field_settings, $empty_post );
                                 }
                             }
                         }
