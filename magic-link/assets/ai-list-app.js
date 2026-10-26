@@ -405,7 +405,11 @@ function load_list_items(posts) {
 
 function populate_list_item_template(item_el, item) {
   const link = item_el.querySelector('a');
-  link.href = `javascript:load_post_details(${item.ID}, "${item.post_type}", "${item.name}")`;
+  link.href = '#';
+  link.onclick = (e) => {
+    e.preventDefault();
+    load_post_details(item.ID, item.post_type, item.name);
+  };
 
   item_el.querySelector('.post-id').innerText = `(#${item.ID})`;
   item_el.querySelector('.post-title').innerText = item.name;
