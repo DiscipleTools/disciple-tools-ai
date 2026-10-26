@@ -554,12 +554,16 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
             $this->update_user_logged_in_state( $params['sys_type'], $params['parts']['post_id'] );
         }
 
+        if ( $params['post_type'] !== $this->default_post_type ) {
+            return new WP_Error( __METHOD__, 'Unsupported post type', [ 'status' => 400 ] );
+        }
+
         // Insert comment for specified post id.
-        $comment_id = DT_Posts::add_post_comment( $params['post_type'], $params['post_id'], $params['comment'], 'comment', [], false );
+        $comment_id = DT_Posts::add_post_comment( $params['post_type'], $params['post_id'], $params['comment'], 'comment', [] );
 
         return [
             'success' => !is_wp_error( $comment_id ),
-            'comments' => DT_Posts::get_post_comments( $params['post_type'], $params['post_id'], false, 'all', [ 'number' => $params['comment_count'] ] )
+            'comments' => DT_Posts::get_post_comments( $params['post_type'], $params['post_id'], true, 'all', [ 'number' => $params['comment_count'] ] )
         ];
     }
 
@@ -578,10 +582,16 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
             $this->update_user_logged_in_state( $params['sys_type'], $params['parts']['post_id'] );
         }
 
+        if ( $params['post_type'] !== $this->default_post_type ) {
+            return new WP_Error( __METHOD__, 'Unsupported post type', [ 'status' => 400 ] );
+        }
 
         // Package field updates...
         $updates = [];
         foreach ( $params['fields']['dt'] ?? [] as $field ) {
+            if ( !in_array( $field['id'] ?? '', $this->default_fields, true ) ) {
+                continue;
+            }
             if ( $field['id'] === 'age' ) {
                 $field['value'] = str_replace( '&lt;', '<', $field['value'] );
                 $field['value'] = str_replace( '&gt;', '>', $field['value'] );
@@ -639,7 +649,7 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
         }
 
         // Execute final post field updates.
-        $updated_post = DT_Posts::update_post( $params['post_type'], $params['post_id'], $updates, false, false );
+        $updated_post = DT_Posts::update_post( $params['post_type'], $params['post_id'], $updates );
 
         // Finally, return response accordingly by post state.
         $success = !( empty( $updated_post ) || is_wp_error( $updated_post ) );
