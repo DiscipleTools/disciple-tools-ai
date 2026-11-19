@@ -616,7 +616,6 @@ class Disciple_Tools_AI_Tile
                             })
                             .then(response => response.json())
                             .then(response => {
-                                console.log(response);
 
                                 /**
                                  * Pause the flow accordingly, if multiple connection options are available.
@@ -763,7 +762,7 @@ class Disciple_Tools_AI_Tile
                                         <tr>
                                           <td style="vertical-align: top;">
                                             ${window.lodash.escape(location.prompt)}
-                                            <input class="prompt" type="hidden" value="${location.prompt}" />
+                                            <input class="prompt" type="hidden" value="${window.lodash.escape(location.prompt)}" />
                                           </td>
                                           <td>
                                             <select class="options">`;
@@ -808,7 +807,7 @@ class Disciple_Tools_AI_Tile
                                         <tr>
                                           <td style="vertical-align: top;">
                                             ${window.lodash.escape(user.prompt)}
-                                            <input class="prompt" type="hidden" value="${user.prompt}" />
+                                            <input class="prompt" type="hidden" value="${window.lodash.escape(user.prompt)}" />
                                           </td>
                                           <td>
                                             <select class="options">`;
@@ -853,7 +852,7 @@ class Disciple_Tools_AI_Tile
                                         <tr>
                                           <td style="vertical-align: top;">
                                             ${window.lodash.escape(post.prompt)}
-                                            <input class="prompt" type="hidden" value="${post.prompt}" />
+                                            <input class="prompt" type="hidden" value="${window.lodash.escape(post.prompt)}" />
                                           </td>
                                           <td>
                                             <select class="options">`;
@@ -949,7 +948,6 @@ class Disciple_Tools_AI_Tile
                         }
                     })
                     .done(function (data) {
-                        console.log(data);
 
                         // If successful, load points.
                         if ((data?.status === 'success') && (data?.filter)) {

@@ -284,7 +284,6 @@
         },
       })
       .done(function (data) {
-        console.log(data);
 
         /**
          * Pause the flow accordingly, if multiple connection options are available.
@@ -353,7 +352,7 @@
                     <tr>
                       <td style="vertical-align: top;">
                         ${window.lodash.escape(location.prompt)}
-                        <input class="prompt" type="hidden" value="${location.prompt}" />
+                        <input class="prompt" type="hidden" value="${window.lodash.escape(location.prompt)}" />
                       </td>
                       <td>
                         <select class="options">`;
@@ -398,7 +397,7 @@
                     <tr>
                       <td style="vertical-align: top;">
                         ${window.lodash.escape(user.prompt)}
-                        <input class="prompt" type="hidden" value="${user.prompt}" />
+                        <input class="prompt" type="hidden" value="${window.lodash.escape(user.prompt)}" />
                       </td>
                       <td>
                         <select class="options">`;
@@ -443,7 +442,7 @@
                     <tr>
                       <td style="vertical-align: top;">
                         ${window.lodash.escape(post.prompt)}
-                        <input class="prompt" type="hidden" value="${post.prompt}" />
+                        <input class="prompt" type="hidden" value="${window.lodash.escape(post.prompt)}" />
                       </td>
                       <td>
                         <select class="options">`;
@@ -538,7 +537,6 @@
         },
       })
       .done(function (data) {
-        console.log(data);
 
         // If successful, load points or relevant alert.
         if ((data?.status === 'success') && (data?.points?.features?.length === 0)) {

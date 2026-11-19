@@ -25,6 +25,7 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
         'milestones',
         'ai_summary'
     ];
+    private $max_comment_count = 10;
 
     private static $_instance = null;
     public $meta = []; // Allows for instance specific data.
@@ -449,8 +450,15 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
         $prompt = $params['filter']['prompt'];
         $post_type = $params['filter']['post_type'];
 
+        if ( $post_type !== $this->default_post_type ) {
+            return new WP_Error( __METHOD__, 'Unsupported post type', [ 'status' => 400 ] );
+        }
+
         if ( isset( $params['filter']['selections'], $params['filter']['pii'], $params['filter']['inferred'] ) ) {
-            return $this->handle_create_filter_with_selections_request( $post_type, $prompt, $params['filter']['selections'], $params['filter']['pii'], $params['filter']['inferred'] );
+            $inferred = is_array( $params['filter']['inferred'] ) ? $params['filter']['inferred'] : [];
+            $inferred['post_types'] = [ $this->default_post_type ];
+
+            return $this->handle_create_filter_with_selections_request( $post_type, $prompt, $params['filter']['selections'], $params['filter']['pii'], $inferred );
         } else {
             return $this->handle_create_filter_request( $post_type, $prompt );
         }
@@ -479,7 +487,7 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
             'connections' => $response['connections'] ?? [],
             'filter' => $response['filter'] ?? [],
             'text_search' => $response['text_search'] ?? null,
-            'posts' => $response['posts'] ?? [],
+            'posts' => $this->app_posts( $response['posts'] ?? [] ),
             'inferred' => $response['inferred'] ?? []
         ];
     }
@@ -505,7 +513,7 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
             'prompt' => $response['prompt'] ?? [],
             'filter' => $response['filter'] ?? [],
             'text_search' => $response['text_search'] ?? null,
-            'posts' => $response['posts'] ?? [],
+            'posts' => $this->app_posts( $response['posts'] ?? [] ),
             'inferred' => $response['inferred'] ?? []
         ];
     }
@@ -525,6 +533,10 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
             $this->update_user_logged_in_state( $params['sys_type'], $params['parts']['post_id'] );
         }
 
+        if ( $params['post_type'] !== $this->default_post_type ) {
+            return new WP_Error( __METHOD__, 'Unsupported post type', [ 'status' => 400 ] );
+        }
+
         // Fetch corresponding post object.
         $post = DT_Posts::get_post( $params['post_type'], $params['post_id'] );
         if ( empty( $post ) || is_wp_error( $post ) ) {
@@ -534,8 +546,8 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
         // Assuming we have a valid hit, return along with specified comments.
         return [
             'success' => true,
-            'post' => $post,
-            'comments' => DT_Posts::get_post_comments( $params['post_type'], $params['post_id'], false, 'all', [ 'number' => $params['comment_count'] ] )
+            'post' => $this->app_post_fields( $post ),
+            'comments' => $this->app_comments( $params['post_id'], $params['comment_count'] )
         ];
     }
 
@@ -554,12 +566,16 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
             $this->update_user_logged_in_state( $params['sys_type'], $params['parts']['post_id'] );
         }
 
+        if ( $params['post_type'] !== $this->default_post_type ) {
+            return new WP_Error( __METHOD__, 'Unsupported post type', [ 'status' => 400 ] );
+        }
+
         // Insert comment for specified post id.
-        $comment_id = DT_Posts::add_post_comment( $params['post_type'], $params['post_id'], $params['comment'], 'comment', [], false );
+        $comment_id = DT_Posts::add_post_comment( $params['post_type'], $params['post_id'], $params['comment'], 'comment', [] );
 
         return [
             'success' => !is_wp_error( $comment_id ),
-            'comments' => DT_Posts::get_post_comments( $params['post_type'], $params['post_id'], false, 'all', [ 'number' => $params['comment_count'] ] )
+            'comments' => $this->app_comments( $params['post_id'], $params['comment_count'] )
         ];
     }
 
@@ -578,10 +594,16 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
             $this->update_user_logged_in_state( $params['sys_type'], $params['parts']['post_id'] );
         }
 
+        if ( $params['post_type'] !== $this->default_post_type ) {
+            return new WP_Error( __METHOD__, 'Unsupported post type', [ 'status' => 400 ] );
+        }
 
         // Package field updates...
         $updates = [];
         foreach ( $params['fields']['dt'] ?? [] as $field ) {
+            if ( !in_array( $field['id'] ?? '', $this->default_fields, true ) ) {
+                continue;
+            }
             if ( $field['id'] === 'age' ) {
                 $field['value'] = str_replace( '&lt;', '<', $field['value'] );
                 $field['value'] = str_replace( '&gt;', '>', $field['value'] );
@@ -632,21 +654,21 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
                         break;
                     default:
                         // unhandled field types
-                        dt_write_log( 'Unsupported field type: ' . $field['value'] );
+                        dt_write_log( 'Unsupported field type for field: ' . $field['id'] );
                         break;
                 }
             }
         }
 
         // Execute final post field updates.
-        $updated_post = DT_Posts::update_post( $params['post_type'], $params['post_id'], $updates, false, false );
+        $updated_post = DT_Posts::update_post( $params['post_type'], $params['post_id'], $updates );
 
         // Finally, return response accordingly by post state.
         $success = !( empty( $updated_post ) || is_wp_error( $updated_post ) );
         return [
             'success' => $success,
             'message' => '',
-            'post' => $success ? $updated_post : null
+            'post' => $success ? $this->app_post_fields( $updated_post ) : null
         ];
     }
 
@@ -659,10 +681,45 @@ class Disciple_Tools_AI_Magic_List_App extends DT_Magic_Url_Base {
                 $current_user->display_name = sprintf( __( '%s Submission', 'disciple_tools' ), apply_filters( 'dt_magic_link_global_name', __( 'Magic Link', 'disciple_tools' ) ) );
                 break;
             default: // wp_user
-                wp_set_current_user( $user_id );
+                // The permission callback matched this id to the link owner as an integer.
+                wp_set_current_user( (int) $user_id );
                 break;
 
         }
+    }
+
+    private function app_post_fields( array $post ): array {
+        $fields = array_merge( [ 'ID', 'post_type', 'name', 'last_modified' ], $this->default_fields );
+
+        return array_intersect_key( $post, array_flip( $fields ) );
+    }
+
+    private function app_posts( array $posts ): array {
+        $app_posts = [];
+        foreach ( $posts as $post ) {
+            if ( is_array( $post ) && ( $post['post_type'] ?? '' ) === $this->default_post_type ) {
+                $app_posts[] = $this->app_post_fields( $post );
+            }
+        }
+
+        return $app_posts;
+    }
+
+    private function app_comments( $post_id, $requested_count ) {
+        $count = max( 1, min( absint( $requested_count ), $this->max_comment_count ) );
+        $comments = DT_Posts::get_post_comments( $this->default_post_type, $post_id, true, 'all', [ 'number' => $count ] );
+        if ( is_wp_error( $comments ) ) {
+            return $comments;
+        }
+
+        $comment_fields = array_flip( [ 'comment_ID', 'comment_author', 'comment_date', 'comment_date_gmt', 'comment_content' ] );
+
+        return [
+            'comments' => array_map( function ( $comment ) use ( $comment_fields ) {
+                return array_intersect_key( (array) $comment, $comment_fields );
+            }, $comments['comments'] ?? [] ),
+            'total' => $comments['total'] ?? 0,
+        ];
     }
 }
 

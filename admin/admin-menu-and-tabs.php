@@ -152,6 +152,8 @@ class Disciple_Tools_AI_Tab_General {
         $network_chat_path = '';
         $network_transcript_provider = '';
         $network_transcript_path = '';
+        $chat_key_inherited = false;
+        $transcript_key_inherited = false;
 
         if ( is_multisite() ) {
             $network_settings = get_site_option( 'DT_AI_connection_settings', [] );
@@ -160,6 +162,10 @@ class Disciple_Tools_AI_Tab_General {
             $network_chat_path = $network_settings['llm_provider_chat_path'] ?? '';
             $network_transcript_provider = $network_settings['transcript_llm_provider'] ?? '';
             $network_transcript_path = $network_settings['transcript_llm_provider_transcript_path'] ?? '';
+
+            $local_settings = get_option( 'DT_AI_connection_settings', [] );
+            $chat_key_inherited = empty( $local_settings['llm_api_key'] ) && !empty( $network_settings['llm_api_key'] );
+            $transcript_key_inherited = empty( $local_settings['transcript_llm_api_key'] ) && !empty( $network_settings['transcript_llm_api_key'] );
         }
 
         // Fetch default and 3rd-Party AI modules.
@@ -234,6 +240,9 @@ class Disciple_Tools_AI_Tab_General {
                                 }
                                 ?>
                             </select>
+                            <?php if ( $chat_key_inherited ) : ?>
+                                <p class="description"><?php esc_html_e( 'The network API key is in use, so requests go to the network endpoint. Enter your own API key to use a different endpoint.', 'disciple-tools-ai' ); ?></p>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <tr>
@@ -326,6 +335,9 @@ class Disciple_Tools_AI_Tab_General {
                             }
                             ?>
                         </select>
+                        <?php if ( $transcript_key_inherited ) : ?>
+                            <p class="description"><?php esc_html_e( 'The network API key is in use, so requests go to the network endpoint. Enter your own API key to use a different endpoint.', 'disciple-tools-ai' ); ?></p>
+                        <?php endif; ?>
                     </td>
                 </tr>
                 <tr>

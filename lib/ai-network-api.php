@@ -33,6 +33,17 @@ class DT_AI_Network_API {
             // Get all network settings from single option
             $network_settings = get_site_option( 'DT_AI_connection_settings', [] );
 
+            // An inherited network API key is only ever sent to the network endpoint.
+            $api_key_endpoints = [
+                'llm_api_key' => 'llm_endpoint',
+                'transcript_llm_api_key' => 'transcript_llm_endpoint',
+            ];
+            foreach ( $api_key_endpoints as $api_key_field => $endpoint_field ) {
+                if ( empty( $settings[ $api_key_field ] ) && !empty( $network_settings[ $api_key_field ] ) ) {
+                    $settings[ $endpoint_field ] = $network_settings[ $endpoint_field ] ?? '';
+                }
+            }
+
             foreach ( $settings as $key => $value ) {
                 if ( empty( $value ) && !empty( $network_settings[$key] ) ) {
                     $settings[$key] = $network_settings[$key];

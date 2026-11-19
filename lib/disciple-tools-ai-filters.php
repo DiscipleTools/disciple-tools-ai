@@ -1,4 +1,7 @@
 <?php
+if ( !defined( 'ABSPATH' ) ){
+    exit;
+} // Exit if accessed directly
 
 add_filter( 'dt_upload_audio_comment', 'dt_upload_audio_comment', 10, 2 );
 function dt_upload_audio_comment( $transcription, $audio_file ): string {

@@ -31,7 +31,6 @@ function create_filter() {
     })
     .then(response => response.json())
     .then(json => {
-      console.log(json);
 
       /**
        * Pause the flow accordingly, if multiple connection options are available.
@@ -107,7 +106,7 @@ function show_multiple_options_modal(multiple_options, pii, inferred) {
             <tr>
               <td style="vertical-align: top;">
                 ${window.lodash.escape(location.prompt)}
-                <input class="prompt" type="hidden" value="${location.prompt}" />
+                <input class="prompt" type="hidden" value="${window.lodash.escape(location.prompt)}" />
               </td>
               <td>
                 <select class="options">`;
@@ -152,7 +151,7 @@ function show_multiple_options_modal(multiple_options, pii, inferred) {
             <tr>
               <td style="vertical-align: top;">
                 ${window.lodash.escape(user.prompt)}
-                <input class="prompt" type="hidden" value="${user.prompt}" />
+                <input class="prompt" type="hidden" value="${window.lodash.escape(user.prompt)}" />
               </td>
               <td>
                 <select class="options">`;
@@ -197,7 +196,7 @@ function show_multiple_options_modal(multiple_options, pii, inferred) {
             <tr>
               <td style="vertical-align: top;">
                 ${window.lodash.escape(post.prompt)}
-                <input class="prompt" type="hidden" value="${post.prompt}" />
+                <input class="prompt" type="hidden" value="${window.lodash.escape(post.prompt)}" />
               </td>
               <td>
                 <select class="options">`;
@@ -298,7 +297,6 @@ function handle_multiple_options_submit(modal) {
     }
   })
   .done(function (data) {
-    console.log(data);
 
     // Stop spinning....
     temp_spinner.setAttribute('class', 'loading-spinner inactive');
@@ -405,7 +403,11 @@ function load_list_items(posts) {
 
 function populate_list_item_template(item_el, item) {
   const link = item_el.querySelector('a');
-  link.href = `javascript:load_post_details(${item.ID}, "${item.post_type}", "${item.name}")`;
+  link.href = '#';
+  link.onclick = (e) => {
+    e.preventDefault();
+    load_post_details(item.ID, item.post_type, item.name);
+  };
 
   item_el.querySelector('.post-id').innerText = `(#${item.ID})`;
   item_el.querySelector('.post-title').innerText = item.name;
@@ -456,7 +458,6 @@ function load_post_details(id, post_type, name) {
   })
   .then(response => response.json())
   .then(json => {
-    console.log(json);
 
     // clone detail template
     const content = detail_template.cloneNode(true);
@@ -697,7 +698,6 @@ function save_item(event) {
   })
   .then((response) => response.json())
   .then((json) => {
-    console.log(json);
 
     if (json.success && json.post) {
       show_notification(jsObject.translations['item_saved'], 'success');

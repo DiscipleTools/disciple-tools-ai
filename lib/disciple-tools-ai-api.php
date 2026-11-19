@@ -16,6 +16,26 @@ class Disciple_Tools_AI_API {
         return DT_AI_Network_API::get_ai_connection_settings();
     }
 
+    // LLM endpoints must be HTTPS on a public address; the dt_ai_allowed_endpoint filter can permit others, such as a self-hosted model.
+    public static function is_allowed_endpoint( string $url ): bool {
+        $allowed = false;
+        if ( wp_parse_url( $url, PHP_URL_SCHEME ) === 'https' && wp_http_validate_url( $url ) ) {
+            $host = wp_parse_url( $url, PHP_URL_HOST );
+            $ip = filter_var( $host, FILTER_VALIDATE_IP ) ? $host : gethostbyname( $host );
+            $allowed = (bool) filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE );
+        }
+
+        return (bool) apply_filters( 'dt_ai_allowed_endpoint', $allowed, $url );
+    }
+
+    private static function llm_remote_post( string $url, array $args ) {
+        if ( !self::is_allowed_endpoint( $url ) ) {
+            return new WP_Error( 'endpoint_not_allowed', __( 'The configured LLM endpoint is not allowed.', 'disciple-tools-ai' ) );
+        }
+
+        return wp_remote_post( $url, array_merge( $args, [ 'redirection' => 0 ] ) );
+    }
+
 
     public static function translate_summary( $summary ) {
         $language_options = dt_get_option( 'dt_working_languages' ) ?: [];
@@ -63,7 +83,7 @@ class Disciple_Tools_AI_API {
         ] );
 
         $start_time = microtime( true );
-        $response = wp_remote_post( $llm_endpoint, [
+        $response = self::llm_remote_post( $llm_endpoint, [
             'method' => 'POST',
             'headers' => self::ai_provider_chat_headers( $connection_settings ),
             'body' => wp_json_encode( $post_data ),
@@ -199,9 +219,17 @@ Output format:
 
         $allowed_field_types = [ 'key_select', 'multi_select', 'number', 'text', 'location', 'location_meta', 'date' ];
 
+        // The summary is stored in a field every viewer can read, so private and hidden fields stay out of the prompt.
+        $is_summary_field = function ( $field_key ) use ( $field_settings, $allowed_field_types ) {
+            return isset( $field_settings[$field_key]['type'] )
+                && in_array( $field_settings[$field_key]['type'], $allowed_field_types, true )
+                && empty( $field_settings[$field_key]['private'] )
+                && empty( $field_settings[$field_key]['hidden'] );
+        };
+
         $prompt = "Contact Fields (Current Values):\n";
         foreach ( $contact_fields as $field => $value ) {
-            if ( !empty( $value ) && isset( $field_settings[$field]['type'] ) && in_array( $field_settings[$field]['type'], $allowed_field_types, true ) ) {
+            if ( !empty( $value ) && $is_summary_field( $field ) ) {
                 $formatted_value = self::format_field_value_to_text( $field_settings[$field]['type'], $value, $field_settings[$field] );
                 $prompt .= "- {$field}: {$formatted_value}\n";
             }
@@ -211,7 +239,7 @@ Output format:
         if ( isset( $field_updates['activity'] ) && is_array( $field_updates['activity'] ) ) {
             foreach ( $field_updates['activity'] as $update ) {
                 $meta_key = $update['meta_key'] ?? '';
-                if ( !empty( $meta_key ) && isset( $field_settings[$meta_key]['type'] ) && in_array( $field_settings[$meta_key]['type'], $allowed_field_types, true ) ) {
+                if ( !empty( $meta_key ) && $is_summary_field( $meta_key ) ) {
                     $formatted_date = !empty( $update['hist_time'] ) ? gmdate( 'Y-m-d H:i:s', $update['hist_time'] ) : 'Unknown date';
                     $user_name = $update['name'] ?? 'Unknown user';
                     $activity_note = $update['object_note'] ?? 'No details';
@@ -247,7 +275,7 @@ Output format:
             'top_p' => 1
         ] );
 
-        $response = wp_remote_post( $llm_endpoint, [
+        $response = self::llm_remote_post( $llm_endpoint, [
             'method' => 'POST',
             'headers' => self::ai_provider_chat_headers( $connection_settings ),
             'body' => wp_json_encode( $post_data ),
@@ -723,7 +751,7 @@ Output format:
             try {
 
                 // Dispatch to prediction guard for prompted inference.
-                $inferred = wp_remote_post( $llm_endpoint, [
+                $inferred = self::llm_remote_post( $llm_endpoint, [
                     'method' => 'POST',
                     'headers' => self::ai_provider_chat_headers( $connection_settings ),
                     'body' => json_encode( $post_data ),
@@ -2431,6 +2459,13 @@ Output format:
          * Proceed with transcription execution.
          */
 
+        if ( !self::is_allowed_endpoint( $llm_endpoint ) ) {
+            return [
+                'status' => 'error',
+                'message' => __( 'The configured transcription endpoint is not allowed.', 'disciple-tools-ai' )
+            ];
+        }
+
         $response = [];
 
         try {
@@ -2460,6 +2495,9 @@ Output format:
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_TIMEOUT => 30,
                 CURLOPT_SSL_VERIFYPEER => true,
+                CURLOPT_FOLLOWLOCATION => false,
+                CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+                CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
             ]);
 
             $transcription_response = curl_exec( $ch );
