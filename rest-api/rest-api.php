@@ -49,6 +49,10 @@ class Disciple_Tools_AI_Endpoints
     }
 
     public function create_filter( WP_REST_Request $request ) {
+        if ( Disciple_Tools_AI_API::has_module_value( Disciple_Tools_AI_API::$module_default_id_dt_ai_list_filter, 'enabled', 0 ) ) {
+            return new WP_Error( 'module_disabled', 'AI List Search and Filter module is not enabled', [ 'status' => 403 ] );
+        }
+
         $params = $request->get_params();
         if ( ! isset( $params['prompt'], $params['post_type'] ) ) {
             return new WP_Error( __METHOD__, 'Missing parameters.' );
